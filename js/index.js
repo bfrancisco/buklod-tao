@@ -162,7 +162,6 @@ getDocs(colRef)
 		querySnapshot.forEach((entry) => {
 			var doc = entry.data();
 			var marker = L.marker([0, 0]);
-			//console.log(doc);
 			if (doc.location_coordinates != null) {
 				marker = L.marker([
 					parseFloat(doc.location_coordinates._lat),
@@ -219,42 +218,45 @@ function onMapClick(e) {
 		modal.classList.remove('hidden');
 		modal.classList.add('flex');
 
- // Handle form submission
- document.getElementById('addHouseholdForm').addEventListener('submit', function (event) {
-  event.preventDefault();
-  
-  const householdData = {
-    household_name: document.getElementById('household_name').value,
-    contact_number: document.getElementById('contact_number').value,
-    household_address: document.getElementById('household_address').value,
-    residency_status: document.getElementById('residency_status').value,
-    is_hoa_noa: document.getElementById('is_hoa_noa').value,
-    nearest_evac: document.getElementById('nearest_evac').value,
-    earthquake_risk: document.getElementById('earthquake_risk').value,
-    fire_risk: document.getElementById('fire_risk').value,
-    flood_risk: document.getElementById('flood_risk').value,
-    landslide_risk: document.getElementById('landslide_risk').value,
-    storm_risk: document.getElementById('storm_risk').value,
-    number_residents: document.getElementById('number_residents').value,
-    number_minors: document.getElementById('number_minors').value,
-    number_seniors: document.getElementById('number_seniors').value,
-    number_pwd: document.getElementById('number_pwd').value,
-    number_sick: document.getElementById('number_sick').value,
-    number_pregnant: document.getElementById('number_pregnant').value,
-    location_coordinates: new firebase.firestore.GeoPoint(parseFloat(lat), parseFloat(lng))
-  };
+    // Set the coordinates based on the pin drop
+    modal.getElementsByTagName('iframe')[0].contentWindow.document.getElementById('location_coordinates').value = lat + '+' + lng;
 
-  addDoc(colRef, householdData)
-    .then(() => {
-      alert('Household added successfully!');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      location.reload(); // Reload the map to show the new marker
-    })
-    .catch((error) => {
-      console.error('Error adding document: ', error);
-    });
-});
+ // Handle form submission
+//  document.getElementById('addHouseholdForm').addEventListener('submit', function (event) {
+//   event.preventDefault();
+  
+//   const householdData = {
+//     household_name: document.getElementById('household_name').value,
+//     contact_number: document.getElementById('contact_number').value,
+//     household_address: document.getElementById('household_address').value,
+//     residency_status: document.getElementById('residency_status').value,
+//     is_hoa_noa: document.getElementById('is_hoa_noa').value,
+//     nearest_evac: document.getElementById('nearest_evac').value,
+//     earthquake_risk: document.getElementById('earthquake_risk').value,
+//     fire_risk: document.getElementById('fire_risk').value,
+//     flood_risk: document.getElementById('flood_risk').value,
+//     landslide_risk: document.getElementById('landslide_risk').value,
+//     storm_risk: document.getElementById('storm_risk').value,
+//     number_residents: document.getElementById('number_residents').value,
+//     number_minors: document.getElementById('number_minors').value,
+//     number_seniors: document.getElementById('number_seniors').value,
+//     number_pwd: document.getElementById('number_pwd').value,
+//     number_sick: document.getElementById('number_sick').value,
+//     number_pregnant: document.getElementById('number_pregnant').value,
+//     location_coordinates: new firebase.firestore.GeoPoint(parseFloat(lat), parseFloat(lng))
+//   };
+
+//   addDoc(colRef, householdData)
+//     .then(() => {
+//       alert('Household added successfully!');
+//       modal.classList.add('hidden');
+//       modal.classList.remove('flex');
+//       location.reload(); // Reload the map to show the new marker
+//     })
+//     .catch((error) => {
+//       console.error('Error adding document: ', error);
+//     });
+// });
 
 
 		// Close the modal when the user clicks anywhere outside of it

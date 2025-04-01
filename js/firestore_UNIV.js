@@ -45,7 +45,9 @@ const lng = getUrlParameter('lng');
 //     return PARTNER_COORDINATES;
 // }
 
-export function getCoordinates() {
+export function getCoordinates(coordinates) {
+	var arr = coordinates.split('+');
+	var lat = arr[0], lng = arr[1];
 	// Ensure lat and lng are numbers
 	const latNum = parseFloat(lat);
 	const lngNum = parseFloat(lng);
@@ -216,7 +218,7 @@ const VALIDATION_RULES = {
 			enum: ['HOA', 'N/A'],
 		},
 		landslide_risk: { type: 'string', required: true },
-		location_coordinates: { type: 'number', required: true },
+		// location_coordinates: { type: 'string', required: true },
 		location_link: { type: 'string', required: true },
 		nearest_evac: { type: 'string', required: true, maxLength: 255 },
 		number_minors: { type: 'number' },

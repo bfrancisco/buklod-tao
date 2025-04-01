@@ -11,42 +11,50 @@
             //import { addLocation } from "./js/firestore.js";
             import { addEntry, BUKLOD_RULES_TEST, setCollection, validateData, getCoordinates } from "./js/firestore_UNIV.js";
             setCollection("buklod-official-TEST");
-            document.addEventListener("DOMContentLoaded", function() {
-                document.getElementById("submit_form").addEventListener("click", handleFormSubmit_v2);
-            });
-            
+            document.getElementById("submit_form").addEventListener("click", handleFormSubmit_v2);
 
             function handleFormSubmit_v2(){
-                console.log("clicked");
                 var collatedInput = {};
 
-                for(let i = 0; i < BUKLOD_RULES_TEST[2].length; i++){
+                for (let i = 0; i < BUKLOD_RULES_TEST[2].length; i++) {
                     //BUKLOD_RULES_TEST[2] are just the field names of each document
-                    console.log(BUKLOD_RULES_TEST[2][i]);
+                    // console.log(BUKLOD_RULES_TEST[2][i]);
                     // let q = document.getElementById(BUKLOD_RULES_TEST[2][i]).value;
                     // collatedInput[BUKLOD_RULES_TEST[2][i]] = q;
 
                     let fieldName = BUKLOD_RULES_TEST[2][i];
                     let inputValue = document.getElementById(fieldName).value;
 
-                    if (fieldName == 'number_residents' || fieldName == 'location_coordinates' || fieldName == 'number_minors' || fieldName == 'number_pregnant' || fieldName == 'number_pwd' || fieldName == 'number_sick') {
-                        if (fieldName == 'location_coordinates') {
-                            //collatedInput[fieldName] = getCoordinates();
-                            collatedInput[fieldName] = inputValue;
-                        } else {
-                            collatedInput[fieldName] = Number(inputValue);
-                        }
-                    } 
-                    else {
+                    if (fieldName == 'number_residents' || fieldName == 'number_minors' || fieldName == 'number_pregnant' || fieldName == 'number_pwd' || fieldName == 'number_sick') {
+                        collatedInput[fieldName] = Number(inputValue);
+                    } else if (fieldName == 'earthquake_risk') {
+                        collatedInput['earthquake_risk'] = inputValue;
+                    } else if (fieldName == 'fire_risk') {
+                        collatedInput['fire_risk'] = inputValue;
+                    } else if (fieldName == 'flood_risk') {
+                        collatedInput['flood_risk'] = inputValue;
+                    } else if (fieldName == 'landslide_risk') {
+                        collatedInput['landslide_risk'] = inputValue;
+                    } else if (fieldName == 'storm_risk') {
+                        collatedInput['storm_risk'] = inputValue;
+                    } else if (fieldName == 'location_coordinates') {
+                        var inputValueSplit = inputValue.split('+');
+                        collatedInput['location_coordinates'] = {
+                            _lat: Number(inputValueSplit[0]),
+                            _long: Number(inputValueSplit[1])
+                        };
+                    } else {
                         collatedInput[fieldName] = inputValue;
                     }
-
                     // this is where data validation will happen
                     // add the if-else statements of edge cases here
                 }
-
-                console.log(collatedInput);
-
+                collatedInput['earthquake_risk'] = document.getElementById("earthquake_level").value + " RISK: " + collatedInput['earthquake_risk'];
+                collatedInput['fire_risk'] = document.getElementById("fire_level").value + " RISK: " + collatedInput['fire_risk'];
+                collatedInput['flood_risk'] = document.getElementById("flood_level").value + " RISK: " + collatedInput['flood_risk'];
+                collatedInput['landslide_risk'] = document.getElementById("landslide_level").value + " RISK: " + collatedInput['landslide_risk'];
+                collatedInput['storm_risk'] = document.getElementById("storm_level").value + " RISK: " + collatedInput['storm_risk'];
+                
                 // if (isLoggedIn == true) {
                 //     const errors = validateData("buklod-official-TEST", collatedInput);
                 // } else {
@@ -207,6 +215,7 @@
                     id="location_coordinates"
                     name="location_coordinates"
                     class="attribs"
+                    readonly
                 /> 
             </div>
 
@@ -360,11 +369,11 @@
                     for="earthquake"
                     >Earthquake
                 </label>
-                <select name="earthquake_level" id="earthquake" class="attribs">
+                <select name="earthquake_level" id="earthquake_level" class="attribs">
                     <option value="" disabled selected hidden></option>
-                    <option value="high">HIGH</option>
-                    <option value="medium">MEDIUM</option>
-                    <option value="low">LOW</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
                 </select>
                 <input
                     type="text"
@@ -380,11 +389,11 @@
                     for="fire"
                     >Fire
                 </label>
-                <select name="fire_level" id="fire" class="attribs">
+                <select name="fire_level" id="fire_level" class="attribs">
                     <option value="" disabled selected hidden></option>
-                    <option value="high">HIGH</option>
-                    <option value="medium">MEDIUM</option>
-                    <option value="low">LOW</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
                 </select>
                 <input
                     type="text"
@@ -400,11 +409,11 @@
                     for="flood"
                     >Flood
                 </label>
-                <select name="flood_level" id="flood" class="attribs">
+                <select name="flood_level" id="flood_level" class="attribs">
                     <option value="" disabled selected hidden></option>
-                    <option value="high">HIGH</option>
-                    <option value="medium">MEDIUM</option>
-                    <option value="low">LOW</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
                 </select>
                 <input
                     type="email"
@@ -420,11 +429,11 @@
                     for="landslide"
                     >Landslide
                 </label>
-                <select name="landslide_level" id="landslide" class="attribs">
+                <select name="landslide_level" id="landslide_level" class="attribs">
                     <option value="" disabled selected hidden></option>
-                    <option value="high">HIGH</option>
-                    <option value="medium">MEDIUM</option>
-                    <option value="low">LOW</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
                 </select>
                 <input
                     type="email"
@@ -439,11 +448,11 @@
                     class="disasterForm"
                     for="storm">Storm
                 </label>
-                <select name="storm_level" id="storm" class="attribs">
+                <select name="storm_level" id="storm_level" class="attribs">
                     <option value="" disabled selected hidden></option>
-                    <option value="high">HIGH</option>
-                    <option value="medium">MEDIUM</option>
-                    <option value="low">LOW</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
                 </select>
                 <input
                     type="email"
