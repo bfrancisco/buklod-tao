@@ -28,7 +28,7 @@ const firebaseConfig = {
 };
 initializeApp(firebaseConfig);
 const db = getFirestore();
-setCollection('buklod-official');
+setCollection('buklod-official-TEST');
 const colRef = getCollection();
 let partnersArray = [];
 
@@ -93,6 +93,7 @@ getDocs(colRef)
       const anchor = document.createElement('a');
       const nameDiv = document.createElement('div');
       const addressDiv = document.createElement('div');
+      var locationList = document.getElementById(`locationList`);
 
       // Set attributes
       anchor.href = '#';
@@ -120,7 +121,9 @@ getDocs(colRef)
       listItem.appendChild(anchor);
       containerDiv.appendChild(img);
       containerDiv.appendChild(listItem);
-      locationList.appendChild(containerDiv);
+      if (locationList) {
+        locationList.appendChild(containerDiv);
+      }
     });
   })
   .catch((error) => {
@@ -347,13 +350,18 @@ export function populateEditForm(partner, editFormModal) {
   var iframe = editFormModal.getElementsByClassName('formIframe')[0]
   var editForm = iframe.contentWindow.document
   for (var data in partner) {
-    // console.log(data.toString()+ " '" + partner[data] + "'")
-    // console.log(partner[data])``
     if (data.includes('risk')) {
-      var assessment = partner[data].split(':')
-      var risk = assessment[0].split(' ')[0].toLowerCase()
-      var details = assessment[1].slice(1)
+      var assessment = partner[data].toString().split(':')
+      var risk
+      var details
       var riskType = data.split('_')
+      if (Array.isArray(assessment) && assessment.length > 1) {
+        risk = assessment[0].split(' ')[0].toLowerCase()
+        details = assessment[1].slice(1)
+      } else {
+        risk = ''
+        details = assessment[0]
+      }
       editForm.getElementById(riskType[0]).value = risk
       editForm.getElementById(data.toString()).value = details
     } else if (partner[data] instanceof Object){
@@ -366,9 +374,4 @@ export function populateEditForm(partner, editFormModal) {
       }
     }
   }
-  // partner.forEach(data => {
-  // });
-  // console.log(partner.household_name)
-  // console.log(document)
-  // console.log(editFormModal.getElementsByClassName('formIframe')[0].contentWindow.document.getElementById('household_name'))
 }

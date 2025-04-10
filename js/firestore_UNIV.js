@@ -452,6 +452,7 @@ export function addEntry(inp_obj) {
 			}
 			addDoc(collection_reference, input)
 				.then((docRef) => {
+					// Suggestion -> on addDoc success, automatically reload instead of manual reloading
 					alert("You may now reload the page for your addition to reflect on this page");
 
 				})

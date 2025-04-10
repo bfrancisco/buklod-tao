@@ -80,7 +80,7 @@ export function clearLocationList() {
 }
 
 // code for the switching of maps
-export const JS_CS_ENGINE = 
+export const JS_CS_ENGINE =
     [
         ["buklod-official",
             [
@@ -98,7 +98,7 @@ export const JS_CS_ENGINE =
                 '/css/form.css',
                 '/css/login.css',
                 '/css/main.css',
-            ]    
+            ]
         ],
     ];
 

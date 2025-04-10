@@ -33,25 +33,70 @@ var popup = L.popup();
 function onPinClick(doc) {
   // Variables for risk levels
   var earthquake = doc.earthquake_risk;
-  var earthquake_split = earthquake.split(' RISK: ');
-  var earthquake1 = earthquake_split[0];
-  var earthquake2 = earthquake_split[1];
+  var earthquake_split
+  var earthquake1
+  var earthquake2
+  if (earthquake) {
+    earthquake_split = earthquake.split(' RISK: ');
+    earthquake1 = earthquake_split[0];
+    earthquake2 = earthquake_split[1];
+  } else {
+    earthquake_split = ''
+    earthquake1 = ''
+    earthquake2 = ''
+  }
   var fire = doc.fire_risk;
-  var fire_split = fire.split(' RISK: ');
-  var fire1 = fire_split[0];
-  var fire2 = fire_split[1];
+  var fire_split
+  var fire1
+  var fire2
+  if(fire) {
+    fire_split = fire.split(' RISK: ');
+    fire1 = fire_split[0];
+    fire2 = fire_split[1];
+  } else {
+    fire_split = ''
+    fire1 = ''
+    fire2 = ''
+  }
   var flood = doc.flood_risk;
-  var flood_split = flood.split(' RISK: ');
-  var flood1 = flood_split[0];
-  var flood2 = flood_split[1];
+  var flood_split
+  var flood1
+  var flood2
+  if(flood) {
+    flood_split = flood.split(' RISK: ');
+    flood1 = flood_split[0];
+    flood2 = flood_split[1];
+  } else {
+    flood_split = ''
+    flood1 = ''
+    flood2 = ''
+  }
   var landslide = doc.landslide_risk;
-  var landslide_split = landslide.split(' RISK: ');
-  var landslide1 = landslide_split[0];
-  var landslide2 = landslide_split[1];
+  var landslide_split
+  var landslide1
+  var landslide2
+  if(landslide) {
+    landslide_split = landslide.split(' RISK: ');
+    landslide1 = landslide_split[0];
+    landslide2 = landslide_split[1];
+  } else {
+    landslide_split = ''
+    landslide1 = ''
+    landslide2 = ''
+  }
   var storm = doc.storm_risk;
-  var storm_split = storm.split(' RISK: ');
-  var storm1 = storm_split[0];
-  var storm2 = storm_split[1];
+  var storm_split
+  var storm1
+  var storm2
+  if(storm) {
+    storm_split = storm.split(' RISK: ');
+    storm1 = storm_split[0];
+    storm2 = storm_split[1];
+  } else {
+    storm_split = ''
+    storm1 = ''
+    storm2 = ''
+  }
 
   let leaflet_html = `
   <div class="leafletPopupContainer" id="leafletModal">
@@ -164,12 +209,14 @@ getDocs(colRef)
     querySnapshot.forEach((entry) => {
       var doc = entry.data();
       var marker = L.marker([0, 0]);
-      //console.log(doc);
       if (doc.location_coordinates != null) {
-        marker = L.marker([
-          parseFloat(doc.location_coordinates._lat),
-          parseFloat(doc.location_coordinates._long),
-        ]);
+        if (Object.hasOwn(doc.location_coordinates, "_lat") &&
+          Object.hasOwn(doc.location_coordinates, "_long")) {
+            marker = L.marker([
+              parseFloat(doc.location_coordinates._lat),
+              parseFloat(doc.location_coordinates._long),
+            ]);
+          }
       }
       // shows partner info on pin click
       var popupContent = onPinClick(doc);
