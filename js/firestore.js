@@ -28,7 +28,7 @@ const firebaseConfig = {
 };
 initializeApp(firebaseConfig);
 const db = getFirestore();
-setCollection('buklod-official-TEST');
+setCollection('buklod-official');
 const colRef = getCollection();
 let partnersArray = [];
 
@@ -161,10 +161,14 @@ function showModal(partner) {
   var storm1 = storm_split[0];
   var storm2 = storm_split[1];
 
+  // Manual Calculation of Resident Adults
+  var number_adult = partner.number_residents - (partner.number_minors+partner.number_seniors)
+
   // Create div elements for each piece of information
   const nameDiv = document.createElement('div');
   const partnerContentDiv = document.createElement('div');
 
+  // The HTML content of the side bar partner information popup modal
   let partner_content = `
     <br>
       <div>
@@ -236,7 +240,7 @@ function showModal(partner) {
         <br>
         <div class="modalLine">
           <label class="modalLabel">Adults</label>
-          <label class="modalLabel" id="entry_number_of_adult_residents">${partner.number_adult}</label>
+          <label class="modalLabel" id="entry_number_of_adult_residents">${number_adult}</label>
         </div>
         <br>
         <div class="modalLine">
@@ -273,6 +277,7 @@ function showModal(partner) {
   modalHeader.appendChild(nameDiv);
   modalContent.appendChild(partnerContentDiv);
 
+  // Provides logic and styling for collapsing sections
   var coll = document.getElementsByClassName("collapsible");
     var i;
 
@@ -346,15 +351,34 @@ export function addEntry(data) {
   });
 }
 
+/**
+ * The function `populateEditForm` populates an edit form with data from a
+ * partner object, handling different data formats appropriately.
+ *
+ * Parameters
+ * ----------
+ * partner
+ *    The `partner` parameter in the `populateEditForm` function is an object
+ * that contains information about a partner. This information includes details
+ * such as risk assessments, location coordinates, and other relevant data. The
+ * function iterates over the properties of the `partner` object and populates
+ * the corresponding sections in the edit form
+ *
+ * editFormModal
+ *    The `editFormModal` parameter is a reference to the modal element that
+ * contains the form for editing partner information. The function
+ * `populateEditForm` populates this form with data from the `partner` object.
+ */
 export function populateEditForm(partner, editFormModal) {
   var iframe = editFormModal.getElementsByClassName('formIframe')[0]
   var editForm = iframe.contentWindow.document
+
   for (var data in partner) {
     if (data.includes('risk')) {
+      var risk, details
       var assessment = partner[data].toString().split(':')
-      var risk
-      var details
       var riskType = data.split('_')
+
       if (Array.isArray(assessment) && assessment.length > 1) {
         risk = assessment[0].split(' ')[0].toLowerCase()
         details = assessment[1].slice(1)
@@ -362,9 +386,10 @@ export function populateEditForm(partner, editFormModal) {
         risk = ''
         details = assessment[0]
       }
+
       editForm.getElementById(riskType[0]).value = risk
       editForm.getElementById(data.toString()).value = details
-    } else if (partner[data] instanceof Object){
+    } else if (partner[data] instanceof Object) {
       editForm.getElementById(data.toString()).value = partner[data]._lat + " " + partner[data]._long
     } else {
       if (partner[data] != null) {

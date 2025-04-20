@@ -29,7 +29,30 @@ var searchControl = L.esri.Geocoding.geosearch().addTo(map);
 var results = L.layerGroup().addTo(map);
 var popup = L.popup();
 
-// function to store the html for info display on pin click
+/**
+ * The function `onPinClick` generates HTML content for a leaflet popup
+ * displaying information about a household's contact details, residency status,
+ * risk levels for various natural disasters, and resident demographics.
+ * Ensures that data is properly displayed despite the data being improperly
+ * displayed
+ *
+ * Parameters
+ * ----------
+ * ### doc
+ *    The function `onPinClick` takes a `doc` parameter which represents a
+ * document or data object containing information about a household. The
+ * function extracts various risk levels (earthquake, fire, flood, landslide,
+ * storm) from the `doc` object and formats them into an HTML structure for
+ *
+ * Returns
+ * -------
+ *    The function `onPinClick` is returning an HTML string that represents a
+ * leaflet popup container with information about a household, including
+ * contact details, address, residency status, nearest evacuation area, risk
+ * levels for earthquake, fire, flood, landslide, and storm, as well as details
+ * about the residents such as total number, minors, seniors, PWDs, sick
+ * individuals, pregnant individuals, etc.
+ */
 function onPinClick(doc) {
   // Variables for risk levels
   var earthquake = doc.earthquake_risk;
@@ -204,6 +227,9 @@ function onPinClick(doc) {
 }
 
 // Loads art the start
+// Retrieves documents from a Firestore collection using the `getDocs` function.
+// It then iterates over each document in the query snapshot, extracts data
+// from the document, and creates a Leaflet marker for each document.
 getDocs(colRef)
   .then((querySnapshot) => {
     querySnapshot.forEach((entry) => {
@@ -221,9 +247,11 @@ getDocs(colRef)
       // shows partner info on pin click
       var popupContent = onPinClick(doc);
       marker.bindPopup(popupContent);
-      marker.on('popupopen', function(e) {
-        console.log('open');
 
+      // Adds a listener on marker popup open to add a listener to the edit form
+      // button which will open the form and  populate the it with the relevant
+      // information
+      marker.on('popupopen', function(e) {
         var editBtn = document.getElementById('editHouseholdPopup')
         if (editBtn) {
             editBtn.addEventListener('click', function() {
@@ -231,7 +259,6 @@ getDocs(colRef)
               var editFormModal = document.getElementById('editModal');
               editFormModal.style.display = 'block';
               modal.style.display = 'none';
-              console.log(doc.household_name);
               populateEditForm(doc, editFormModal)
             })
           }

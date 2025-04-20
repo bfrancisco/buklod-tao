@@ -1,5 +1,4 @@
 import { editEntry, getDocIdByPartnerName, getDocByID, getDocsByPartnerName} from "./firestore_UNIV.js";
-import { colRef, } from './firestore.js';
 
 // function populateFormFields(partnerData) {
 // 		document.getElementById("partner").value = partnerData.name;
@@ -36,6 +35,10 @@ import { colRef, } from './firestore.js';
 
 document.getElementById("submit_form").addEventListener("click", handleFormSubmit);
 
+/**
+ * Retrieves data from a form, processes it,and updates an entry in a database
+ * based on the form input and partner name.
+ */
 async function handleFormSubmit() {
 		var partner_name = parent.document.getElementsByClassName("modal-name")[0].innerHTML
 
@@ -65,5 +68,4 @@ async function handleFormSubmit() {
 				}
 				editEntry(collatedInput, docId)
 			})
-
 }
