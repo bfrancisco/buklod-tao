@@ -79,8 +79,8 @@
     <!-- Modal footer: contains edit and delete buttons -->
     <div class="modalFooter">
       <div class="modalLine">
-        <button class="modalButton" type="submit" id="submit_form" name="submit_form" style="color:#D64747">Delete &nbsp;&nbsp;<img src="./img/delete.png" alt="delete" style="height: 20px; width: 20px;"></button>   
-        <button class="modalButton" id="editHousehold" name="submit_form" style="color:#3D97AF">Edit   &nbsp;&nbsp;<img src="./img/edit.png" alt="edit" style="height: 20px; width: 20px;"></button>   
+        <button class="modalButton" type="submit" id="submit_form" name="submit_form" style="color:#D64747">Delete &nbsp;&nbsp;<img src="./img/delete.png" alt="delete" style="height: 20px; width: 20px;"></button>
+        <button class="modalButton" id="editHousehold" name="submit_form" style="color:#3D97AF">Edit   &nbsp;&nbsp;<img src="./img/edit.png" alt="edit" style="height: 20px; width: 20px;"></button>
       </div>
     </div>
   </div>
@@ -94,9 +94,9 @@
   <div id="editModal" class="formModal" style="display: none;">
     <iframe src="./editloc.html" class="formIframe"></iframe>
   </div>
-  
+
   <!--script for map-->
-  <script type="module" src="js/index.js"></script>
+  <script type="module" src="/js/index.js"></script>
 
   <!--script for search bar-->
   <script>
@@ -114,7 +114,7 @@
         }
       }
     }
-    
+
 					// This hides the Add Activity modal when the user submits the form
 					window.addEventListener('message', function (event) {
 						if (
@@ -164,7 +164,7 @@
 					});
   </script>
 
-  
+
 <!--script for add a location on map click-->
 <script>
   document.addEventListener('DOMContentLoaded', (event) => {

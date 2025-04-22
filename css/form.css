@@ -2,7 +2,7 @@
 
 div.container {
     margin: auto;
-    width: 50%; 
+    width: 50%;
 }
 
 /* container for each input field */
@@ -22,20 +22,20 @@ div.inputContainer.checkboxContainer {
 
 /* Specific to the select input for residency status */
 #residencyStatus {
-    width: 400px; 
+    width: 400px;
 }
 
 /* Styling for the label column specific for the HOA / NOA option */
 div.labelColumn {
-    flex: 1; 
+    flex: 1;
     display: flex;
-    justify-content: flex-start; 
+    justify-content: flex-start;
 }
 
 /* Styling for the checkbox column specific for the HOA / NOA option */
 div.checkboxColumn {
     display: flex;
-    justify-content: left; 
+    justify-content: left;
     padding-right: 180px;
 }
 
@@ -53,7 +53,7 @@ div.checkboxColumn {
     padding: 20px;
     box-sizing: border-box;
 }
-  
+
 .formModalHeader {
     position: fixed;
     z-index: 9991;
@@ -62,9 +62,9 @@ div.checkboxColumn {
     background-color: #fcfcfc;
     border-radius: 8px 0px 0px 0px;
     overflow-y: auto;
-    position: relative; 
+    position: relative;
 }
-  
+
 .formModalContent {
     padding: 10px 32px;
     padding-bottom: 32px;
@@ -77,7 +77,7 @@ div.checkboxColumn {
     font-style: normal;
     overflow-y: auto;
 }
-  
+
 /* form footer (empty) */
 .formModalFooter {
     height: 8px;
@@ -125,7 +125,7 @@ label.disasterForm {
 
 /* CSS for select elements */
 select.attribs {
-    display: block; 
+    display: block;
     width: 125px;
     height: 40px;
     box-sizing: border-box;
@@ -144,7 +144,7 @@ select.attribs:hover {
 
 /* CSS for input elements */
 input.attribs {
-    display: block; 
+    display: block;
     width: 400px;
     height: 40px;
     box-sizing: border-box;
@@ -234,17 +234,17 @@ button.confirm:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    position: absolute; 
-    top: 10px; 
-    right: 20px; 
-    z-index: 9992; 
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 9992;
     margin-right: 10px;
     margin-top: 10px;
 }
 
 .closeForm svg {
-    width: 40px; 
-    height: 40px; 
+    width: 40px;
+    height: 40px;
     fill: #aaaaaa;
     transition: fill 0.2s;
 }

@@ -1,18 +1,18 @@
-import {} from './firestore.js';
+import {populateEditForm} from './firestore.js';
 import {
-	getDocIdByPartnerName,
-	getDocByID,
-	setCollection,
-	getCollection,
-	DB,
-	addEntry,
-	BUKLOD_RULES_TEST,
+  getDocIdByPartnerName,
+  getDocByID,
+  setCollection,
+  getCollection,
+  DB,
+  addEntry,
+  BUKLOD_RULES_TEST,
 } from './firestore_UNIV.js';
 import { addListeners, map } from './index_UNIV.js';
 import {
-	getFirestore,
-	collection,
-	getDocs,
+  getFirestore,
+  collection,
+  getDocs,
 } from 'https://www.gstatic.com/firebasejs/9.18.0/firebase-firestore.js';
 
 var colRef = getCollection();
@@ -20,8 +20,8 @@ var colRef = getCollection();
 map.panTo(new L.LatLng(14.673, 121.11215));
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	attribution:
-		'&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors',
+  attribution:
+    '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
 var searchControl = L.esri.Geocoding.geosearch().addTo(map);
@@ -29,36 +29,105 @@ var searchControl = L.esri.Geocoding.geosearch().addTo(map);
 var results = L.layerGroup().addTo(map);
 var popup = L.popup();
 
-// function to store the html for info display on pin click
+/**
+ * The function `onPinClick` generates HTML content for a leaflet popup
+ * displaying information about a household's contact details, residency status,
+ * risk levels for various natural disasters, and resident demographics.
+ * Ensures that data is properly displayed despite the data being improperly
+ * displayed
+ *
+ * Parameters
+ * ----------
+ * ### doc
+ *    The function `onPinClick` takes a `doc` parameter which represents a
+ * document or data object containing information about a household. The
+ * function extracts various risk levels (earthquake, fire, flood, landslide,
+ * storm) from the `doc` object and formats them into an HTML structure for
+ *
+ * Returns
+ * -------
+ *    The function `onPinClick` is returning an HTML string that represents a
+ * leaflet popup container with information about a household, including
+ * contact details, address, residency status, nearest evacuation area, risk
+ * levels for earthquake, fire, flood, landslide, and storm, as well as details
+ * about the residents such as total number, minors, seniors, PWDs, sick
+ * individuals, pregnant individuals, etc.
+ */
 function onPinClick(doc) {
   // Variables for risk levels
-	var earthquake = doc.earthquake_risk;
-	var earthquake_split = earthquake.split(' RISK: ');
-	var earthquake1 = earthquake_split[0];
-	var earthquake2 = earthquake_split[1];
-	var fire = doc.fire_risk;
-	var fire_split = fire.split(' RISK: ');
-	var fire1 = fire_split[0];
-	var fire2 = fire_split[1];
-	var flood = doc.flood_risk;
-	var flood_split = flood.split(' RISK: ');
-	var flood1 = flood_split[0];
-	var flood2 = flood_split[1];
-	var landslide = doc.landslide_risk;
-	var landslide_split = landslide.split(' RISK: ');
-	var landslide1 = landslide_split[0];
-	var landslide2 = landslide_split[1];
-	var storm = doc.storm_risk;
-	var storm_split = storm.split(' RISK: ');
-	var storm1 = storm_split[0];
-	var storm2 = storm_split[1];
+  var earthquake = doc.earthquake_risk;
+  var earthquake_split
+  var earthquake1
+  var earthquake2
+  if (earthquake) {
+    earthquake_split = earthquake.split(' RISK: ');
+    earthquake1 = earthquake_split[0];
+    earthquake2 = earthquake_split[1];
+  } else {
+    earthquake_split = ''
+    earthquake1 = ''
+    earthquake2 = ''
+  }
+  var fire = doc.fire_risk;
+  var fire_split
+  var fire1
+  var fire2
+  if(fire) {
+    fire_split = fire.split(' RISK: ');
+    fire1 = fire_split[0];
+    fire2 = fire_split[1];
+  } else {
+    fire_split = ''
+    fire1 = ''
+    fire2 = ''
+  }
+  var flood = doc.flood_risk;
+  var flood_split
+  var flood1
+  var flood2
+  if(flood) {
+    flood_split = flood.split(' RISK: ');
+    flood1 = flood_split[0];
+    flood2 = flood_split[1];
+  } else {
+    flood_split = ''
+    flood1 = ''
+    flood2 = ''
+  }
+  var landslide = doc.landslide_risk;
+  var landslide_split
+  var landslide1
+  var landslide2
+  if(landslide) {
+    landslide_split = landslide.split(' RISK: ');
+    landslide1 = landslide_split[0];
+    landslide2 = landslide_split[1];
+  } else {
+    landslide_split = ''
+    landslide1 = ''
+    landslide2 = ''
+  }
+  var storm = doc.storm_risk;
+  var storm_split
+  var storm1
+  var storm2
+  if(storm) {
+    storm_split = storm.split(' RISK: ');
+    storm1 = storm_split[0];
+    storm2 = storm_split[1];
+  } else {
+    storm_split = ''
+    storm1 = ''
+    storm2 = ''
+  }
 
-	let leaflet_html = `
+  let leaflet_html = `
   <div class="leafletPopupContainer" id="leafletModal">
     <div class="leafletHeader">
       <label>${doc.household_name}</label>
     </div>
     <div class="leafletContent">
+      <br>
       <br>
       <div style="line-height: 1px;">
         <p>${doc.contact_number}</p>
@@ -149,44 +218,66 @@ function onPinClick(doc) {
         <label class="leafletLabel">Pregnant</label>
         <label class="leafletLabel">${doc.number_pregnant}</label>
       </div>
+      <button class="modalButton" id="editHouseholdPopup" name="submit_form" style="color:#3D97AF">Edit   &nbsp;&nbsp;<img src="./img/edit.png" alt="edit" style="height: 20px; width: 20px;"></button>
       </div>
     </div>
-  </div>       
+  </div>
   `;
-	return leaflet_html;
+  return leaflet_html;
 }
 
 // Loads art the start
+// Retrieves documents from a Firestore collection using the `getDocs` function.
+// It then iterates over each document in the query snapshot, extracts data
+// from the document, and creates a Leaflet marker for each document.
 getDocs(colRef)
-	.then((querySnapshot) => {
-		querySnapshot.forEach((entry) => {
-			var doc = entry.data();
-			var marker = L.marker([0, 0]);
-			//console.log(doc);
-			if (doc.location_coordinates != null) {
-				marker = L.marker([
-					parseFloat(doc.location_coordinates._lat),
-					parseFloat(doc.location_coordinates._long),
-				]);
-			}
-			// shows partner info on pin click
-			var popupContent = onPinClick(doc);
-			marker.bindPopup(popupContent);
-			results.addLayer(marker);
-		});
-	})
-	.catch((error) => {
-		console.error('Error getting documents: ', error);
-	});
+  .then((querySnapshot) => {
+    querySnapshot.forEach((entry) => {
+      var doc = entry.data();
+      var marker = L.marker([0, 0]);
+      if (doc.location_coordinates != null) {
+        if (Object.hasOwn(doc.location_coordinates, "_lat") &&
+          Object.hasOwn(doc.location_coordinates, "_long")) {
+            marker = L.marker([
+              parseFloat(doc.location_coordinates._lat),
+              parseFloat(doc.location_coordinates._long),
+            ]);
+          }
+      }
+      // shows partner info on pin click
+      var popupContent = onPinClick(doc);
+      marker.bindPopup(popupContent);
+
+      // Adds a listener on marker popup open to add a listener to the edit form
+      // button which will open the form and  populate the it with the relevant
+      // information
+      marker.on('popupopen', function(e) {
+        var editBtn = document.getElementById('editHouseholdPopup')
+        if (editBtn) {
+            editBtn.addEventListener('click', function() {
+              const modal = document.getElementById('partnerModal');
+              var editFormModal = document.getElementById('editModal');
+              editFormModal.style.display = 'block';
+              modal.style.display = 'none';
+              populateEditForm(doc, editFormModal)
+            })
+          }
+        })
+        results.addLayer(marker);
+    });
+  })
+  .catch((error) => {
+    console.error('Error getting documents: ', error);
+  });
 
 addListeners();
 
 function onMapClick(e) {
-	const lat = e.latlng.lat;
-	const lng = e.latlng.lng;
+  const lat = e.latlng.lat;
+  const lng = e.latlng.lng;
 
-	// This is the popup for when the user clicks on a spot on the map
-	var popupContent = `
+  // This is the popup for when the user clicks on a spot on the map
+  var popupContent = `
       <div class="partner-geolocation">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C11.337 11.5 10.7011 11.2366 10.2322 10.7678C9.76339 10.2989 9.5 9.66304 9.5 9C9.5 8.33696 9.76339 7.70107 10.2322 7.23223C10.7011 6.76339 11.337 6.5 12 6.5C12.663 6.5 13.2989 6.76339 13.7678 7.23223C14.2366 7.70107 14.5 8.33696 14.5 9C14.5 9.66304 14.2366 10.2989 13.7678 10.7678C13.2989 11.2366 12.663 11.5 12 11.5Z" fill="#91C9DB"/>
@@ -197,87 +288,90 @@ function onMapClick(e) {
     <button id="mainButton" class="addButton p-5" data-lat="${lat}" data-lng="${lng}">Add Household</button>
     `;
 
-	popup.setLatLng(e.latlng).setContent(popupContent).openOn(map);
+  popup.setLatLng(e.latlng).setContent(popupContent).openOn(map);
 
-	var addButton = document.querySelector('.addButton');
-	addButton.addEventListener('click', function () {
-		const lat = this.getAttribute('data-lat');
-		const lng = this.getAttribute('data-lng');
+  var addButton = document.querySelector('.addButton');
+  addButton.addEventListener('click', function () {
+    const lat = this.getAttribute('data-lat');
+    const lng = this.getAttribute('data-lng');
 
-		var modal = document.getElementById('addModal');
+    var modal = document.getElementById('addModal');
 
-		// TODO: Integrate this functionality into the modal instead
-		// var partnerName = this.getAttribute("data-loc");
-		// window.open(
-		//   `addloc.html?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(
-		//     lng
-		//   )}`,
-		//   "_blank"
-		// );
+    // TODO: Integrate this functionality into the modal instead
+    // var partnerName = this.getAttribute("data-loc");
+    // window.open(
+    //   `addloc.html?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(
+    //     lng
+    //   )}`,
+    //   "_blank"
+    // );
 
-		// Display the modal
-		modal.classList.remove('hidden');
-		modal.classList.add('flex');
+    // Display the modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
 
  // Handle form submission
- document.getElementById('addHouseholdForm').addEventListener('submit', function (event) {
-  event.preventDefault();
-  
-  const householdData = {
-    household_name: document.getElementById('household_name').value,
-    contact_number: document.getElementById('contact_number').value,
-    household_address: document.getElementById('household_address').value,
-    residency_status: document.getElementById('residency_status').value,
-    is_hoa_noa: document.getElementById('is_hoa_noa').value,
-    nearest_evac: document.getElementById('nearest_evac').value,
-    earthquake_risk: document.getElementById('earthquake_risk').value,
-    fire_risk: document.getElementById('fire_risk').value,
-    flood_risk: document.getElementById('flood_risk').value,
-    landslide_risk: document.getElementById('landslide_risk').value,
-    storm_risk: document.getElementById('storm_risk').value,
-    number_residents: document.getElementById('number_residents').value,
-    number_minors: document.getElementById('number_minors').value,
-    number_seniors: document.getElementById('number_seniors').value,
-    number_pwd: document.getElementById('number_pwd').value,
-    number_sick: document.getElementById('number_sick').value,
-    number_pregnant: document.getElementById('number_pregnant').value,
-    location_coordinates: new firebase.firestore.GeoPoint(parseFloat(lat), parseFloat(lng))
-  };
+  var addHouseholdFrom = document.getElementById('addHouseholdForm')
+  if (addHouseholdFrom) {
+    addHouseholdFrom.addEventListener('submit', function (event) {
+      event.preventDefault();
 
-  addDoc(colRef, householdData)
-    .then(() => {
-      alert('Household added successfully!');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      location.reload(); // Reload the map to show the new marker
-    })
-    .catch((error) => {
-      console.error('Error adding document: ', error);
+      const householdData = {
+        household_name: document.getElementById('household_name').value,
+        contact_number: document.getElementById('contact_number').value,
+        household_address: document.getElementById('household_address').value,
+        residency_status: document.getElementById('residency_status').value,
+        is_hoa_noa: document.getElementById('is_hoa_noa').value,
+        nearest_evac: document.getElementById('nearest_evac').value,
+        earthquake_risk: document.getElementById('earthquake_risk').value,
+        fire_risk: document.getElementById('fire_risk').value,
+        flood_risk: document.getElementById('flood_risk').value,
+        landslide_risk: document.getElementById('landslide_risk').value,
+        storm_risk: document.getElementById('storm_risk').value,
+        number_residents: document.getElementById('number_residents').value,
+        number_minors: document.getElementById('number_minors').value,
+        number_seniors: document.getElementById('number_seniors').value,
+        number_pwd: document.getElementById('number_pwd').value,
+        number_sick: document.getElementById('number_sick').value,
+        number_pregnant: document.getElementById('number_pregnant').value,
+        location_coordinates: new firebase.firestore.GeoPoint(parseFloat(lat), parseFloat(lng))
+      };
+
+      addDoc(colRef, householdData)
+        .then(() => {
+          alert('Household added successfully!');
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          location.reload(); // Reload the map to show the new marker
+        })
+        .catch((error) => {
+          console.error('Error adding document: ', error);
+        });
     });
-});
+  }
 
 
-		// Close the modal when the user clicks anywhere outside of it
-		window.onclick = function (event) {
-			if (event.target == modal) {
-				modal.classList.add('hidden');
-				modal.classList.remove('flex');
-			}
-		};
-	});
+    // Close the modal when the user clicks anywhere outside of it
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    };
+  });
 }
 
 map.on('click', onMapClick);
 
 //// Event Listeners
 searchControl.on('results', function (data) {
-	console.log(data);
-	results.clearLayers();
-	for (var i = data.results.length - 1; i >= 0; i--) {
-		var marker = L.marker(data.results[i].latlng);
-		//console.log(marker);
-		results.addLayer(marker);
-	}
+  console.log(data);
+  results.clearLayers();
+  for (var i = data.results.length - 1; i >= 0; i--) {
+    var marker = L.marker(data.results[i].latlng);
+    //console.log(marker);
+    results.addLayer(marker);
+  }
 });
 
 //script for add household modal
@@ -292,31 +386,37 @@ var openForm = document.getElementById('mainButton');
 var closeForm = document.getElementsByClassName('closeForm')[0];
 
 // When the user clicks the button, open the modal
-openForm.onclick = function() {
-   formModal.style.display = "block";
+if(openForm) {
+  openForm.onclick = function() {
+    formModal.style.display = "block";
+  }
+
+  openForm.addEventListener('click', function () {
+    formModal.style.display = 'block';
+  });
 }
 
-openForm.addEventListener('click', function () {
-	formModal.style.display = 'block';
-});
-
-closeForm.addEventListener('click', function () {
-  formModal.style.display = 'none';
-});
+if(closeForm) {
+  closeForm.addEventListener('click', function () {
+    formModal.style.display = 'none';
+  });
+}
 
 // Closing the modal if the user clicks outside of it
 window.onclick = function (event) {
-	if (event.target == formModal) {
-		formModal.style.display = 'none';
-	}
-	if (event.target == partnerModal) {
-		partnerModal.style.display = 'none';
-	}
+  if (event.target == formModal) {
+    formModal.style.display = 'none';
+  }
+  if (event.target == partnerModal) {
+    partnerModal.style.display = 'none';
+  }
 };
 
 function addMainButtonText() {
-	var mainButtonText = document.getElementById('mainButtonText');
-	mainButtonText.innerHTML = 'Add a household';
+  var mainButtonText = document.getElementById('mainButtonText');
+  if(mainButtonText) {
+    mainButtonText.innerHTML = 'Add a household';
+  }
 }
 
 addMainButtonText();

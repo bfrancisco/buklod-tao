@@ -7,345 +7,146 @@
     <link rel="stylesheet" href="./css/main.css">
     <link href='https://fonts.googleapis.com/css?family=Hind' rel='stylesheet'>
 
-    <script type="module">
-        import { editEntry, getDocIdByPartnerName, getDocByID } from "./js/firestore_UNIV.js";
-        function populateFormFields(partnerData) {
-            document.getElementById("partner").value = partnerData.name;
-            document.getElementById("partner_contact-person").value = partnerData["`partner-contact`"];
-            document.getElementById("organization").value = partnerData.org;
-            document.getElementById("nature_of_act").value = partnerData.activity;
-            document.getElementById("dates_of_partnership").value = partnerData.dates;
-            document.getElementById("ateneo_office").value = partnerData["`admu-office`"];
-            document.getElementById("ateneo_contact-person").value = partnerData["`admu-contact`"];
-            document.getElementById("ateneo_contact-email").value = partnerData["`admu-email`"];
-        }
-        function fetchPartnerData() {
-            const params = new URLSearchParams(window.location.search);
-            const partnerName = params.get("partnerName");
-            if (partnerName) {
-                getDocIdByPartnerName(partnerName)
-                    .then((docId) => {
-                        if (docId) {
-                            getDocByID(docId).then((doc) => {
-                                populateFormFields(doc);
-                            });
-                        }
-                        else {
-                            alert("No matching document found for the partner name: " + partnerName);
-                        }
-                    });
-            }
-            else {
-                alert("No partnerName parameter found in the URL.");
-            }
-        }
-        //fetchPartnerData();
-
-        document.getElementById("submit_form").addEventListener("click", handleFormSubmit);
-
-        function handleFormSubmit() {
-            const partnerName = document.getElementById("partner").value;
-            getDocIdByPartnerName(partnerName)
-                .then((docId) => {
-                    if (docId) {
-                        // If a matching docId is found, proceed with updating the document
-                        const name = partnerName;
-                        const activity = document.getElementById("nature_of_act").value;
-                        const admuContact = document.getElementById("ateneo_contact-person").value;
-                        const admuEmail = document.getElementById("ateneo_contact-email").value;
-                        const admuOffice = document.getElementById("ateneo_office").value;
-                        const org = document.getElementById("organization").value;
-                        const partnerContact = document.getElementById("partner_contact-person").value;
-                        const dates = document.getElementById("dates_of_partnership").value;
-
-                        editLocation(docId, name, activity, admuContact, admuEmail, admuOffice, org, partnerContact, dates);
-                    }
-                    else {
-                        // Handle case when no matching document is found
-                        alert("No matching document found for the partner name: " + partnerName);
-                    }
-                });
-
-        }
-    </script>
+    <script type="module" src="./js/editloc.js"></script>
 </head>
 
 <body>
 
-      <!-- Modal Header: includes title and address -->
-      <div class="formModalHeader">
-            <button type="button" class="closeForm" id="close-btn">
-                <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z" fill="#0F1729"/>
-                </svg>
-            </button>
-            <h1 class="formHeader">Edit Household</h1>
-      </div>
-      <div class="formModalContent">
+    <!-- Modal Header: includes title and address -->
+    <div class="formModalHeader">
+        <button type="button" class="closeForm" id="close-btn">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z"
+                    fill="#0F1729" />
+            </svg>
+        </button>
+        <h1 class="formHeader">Edit Household</h1>
+    </div>
+    <div class="formModalContent">
         <h2 class="subHeader">HOUSEHOLD INFORMATION</h2>
         <br>
         <!-- Form -->
         <div class="inputContainer">
-            <label
-                class="form"
-                for="household_name"
-                >Household Name
+            <label class="form" for="household_name">Household Name
             </label>
-            <input 
-                type="text"
-                id="household_name"
-                name="household_name"
-                class="attribs"
-            />
+            <input type="text" id="household_name" name="household_name" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="household_address"
-                >Address
+            <label class="form" for="household_address">Address
             </label>
-            <input
-                type="text"
-                id="household_address"
-                name="household_address"
-                class="attribs"
-            />    
+            <input type="text" id="household_address" name="household_address" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="household_phase"
-                >Phase
+            <label class="form" for="household_phase">Phase
             </label>
-            <input
-                type="text"
-                id="household_phase"
-                name="household_phase"
-                class="attribs"
-            />    
+            <input type="text" id="household_phase" name="household_phase" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="contact_number"
-                >Contact Number
+            <label class="form" for="contact_number">Contact Number
             </label>
-            <input
-                type="text"
-                id="contact_number"
-                name="contact_number"
-                class="attribs"
-            />    
+            <input type="text" id="contact_number" name="contact_number" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="residency_status"
-                >Residency Status
+            <label class="form" for="residency_status">Residency Status
             </label>
-            <input
-                type="text"
-                id="residency_status"
-                name="residency_status"
-                class="attribs"
-            /> 
+            <input type="text" id="residency_status" name="residency_status" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="HOA/NOA"
-                >Part of HOA/NOA
+            <label class="form" for="HOA/NOA">Part of HOA/NOA
             </label>
-            <input
-                type="text"
-                id="is_hoa_noa"
-                name="HOA/NOA"
-                class="attribs"
-                value="HOA"
-            /> 
-        </div>
-
-        <div class="inputContainer">
-            <label
-                class="form"
-                for="location_link"
-                >Location link
-            </label>
-            <input 
-                type="text"
-                id="location_link"
-                name="location_link"
-                class="attribs"> 
-        </div>
-        
-        <div class="inputContainer">
-            <label
-                class="form"
-                for="location_coordinates"
-                >Location Coordinates
-            </label>
-            <input
-                type="text"
-                id="location_coordinates"
-                name="location_coordinates"
-                class="attribs"
-            /> 
-        </div>
-
-        <br>
-        <div class="inputContainer">
-            <label
-                class="form"
-                for="household_material"
-                >Materials Used for House
-            </label>
-            <input
-                type="text"
-                id="household_material"
-                name="household_material"
-                class="attribs"
-            /> 
+            <input type="text" id="is_hoa_noa" name="HOA/NOA" class="attribs" value="HOA" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="nearest_evac"
-                >Nearest Evactuation Area
+            <label class="form" for="location_link">Location link
             </label>
-            <input
-                type="text"
-                id="nearest_evac"
-                name="nearest_evac"
-                class="attribs"
-            />    
+            <input type="text" id="location_link" name="location_link" class="attribs">
         </div>
-
+        <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="status"
-                >Status
+            <label class="form" for="location_coordinates">Location Coordinates
             </label>
-            <input
-                type="text"
-                id="status"
-                name="status"
-                class="attribs"
-            />    
+            <input type="text" id="location_coordinates" name="location_coordinates" class="attribs" />
+        </div>
+        <br>
+        <div class="inputContainer">
+            <label class="form" for="household_material">Materials Used for House
+            </label>
+            <input type="text" id="household_material" name="household_material" class="attribs" />
+        </div>
+        <br>
+        <div class="inputContainer">
+            <label class="form" for="nearest_evac">Nearest Evactuation Area
+            </label>
+            <input type="text" id="nearest_evac" name="nearest_evac" class="attribs" />
+        </div>
+        <br>
+        <div class="inputContainer">
+            <label class="form" for="status">Status
+            </label>
+            <input type="text" id="status" name="status" class="attribs" />
         </div>
         <br>
         <h2 class="subHeader">RESIDENT INFORMATION</h2>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="number_residents"
-                >Number of Residents
+            <label class="form" for="number_residents">Number of Residents
             </label>
-            <input
-                type="number"
-                id="number_residents"
-                name="number_residents"
-                class="attribs"
-            />    
+            <input type="number" id="number_residents" name="number_residents" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="number_minors"
-                >Number of Minor Residents
+            <label class="form" for="number_adults">Number of Adults
             </label>
-            <input
-                type="text"
-                id="number_minors"
-                name="number_minors"
-                class="attribs"
-            />
+            <input type="number" id="number_adults" name="number_adults" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="number_seniors"
-                >Number of Senior Citizen Residents
+            <label class="form" for="number_minors">Number of Minor Residents
             </label>
-            <input
-                type="text"
-                id="number_seniors"
-                name="number_seniors"
-                class="attribs"
-            />
+            <input type="number" id="number_minors" name="number_minors" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="number_pwd"
-                >Number of PWD Residents
+            <label class="form" for="number_seniors">Number of Senior Citizen Residents
             </label>
-            <input
-                type="text"
-                id="number_pwd"
-                name="number_pwd"
-                class="attribs"
-            />
+            <input type="number" id="number_seniors" name="number_seniors" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="number_sick"
-                >Number of Sick Residents
+            <label class="form" for="number_pwd">Number of PWD Residents
             </label>
-            <input
-                type="text"
-                id="number_sick"
-                name="number_sick"
-                class="attribs"
-            />
-        </div>
-        <div class="inputContainer">
-            <label
-                class="form"
-                for="sickness_present"
-                >Sickness Present
-            </label>
-            <input
-                type="text"
-                id="sickness_present"
-                name="sickness_present"
-                class="attribs"
-            />
+            <input type="number" id="number_pwd" name="number_pwd" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="form"
-                for="number_pregnant"
-                >Number of Pregnant Residents
+            <label class="form" for="number_sick">Number of Sick Residents
             </label>
-            <input
-                type="text"
-                id="number_pregnant"
-                name="number_pregnant"
-                class="attribs"
-            />
+            <input type="number" id="number_sick" name="number_sick" class="attribs" />
+        </div>
+        <br>
+        <div class="inputContainer">
+            <label class="form" for="sickness_present">Sickness Present
+            </label>
+            <input type="text" id="sickness_present" name="sickness_present" class="attribs" />
+        </div>
+        <br>
+        <div class="inputContainer">
+            <label class="form" for="number_pregnant">Number of Pregnant Residents
+            </label>
+            <input type="number" id="number_pregnant" name="number_pregnant" class="attribs" />
         </div>
         <br>
         <h2 class="subHeader">RISK LEVELS</h2>
         <br>
         <div class="inputContainer">
-            <label
-                class="disasterForm"
-                for="earthquake"
-                >Earthquake
+            <label class="disasterForm" for="earthquake">Earthquake
             </label>
             <select name="earthquake_level" id="earthquake" class="attribs">
                 <option value="" disabled selected hidden></option>
@@ -353,19 +154,11 @@
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
             </select>
-            <input
-                type="text"
-                id="earthquake_risk"
-                name="earthquake_risk"
-                class="attribs"
-            />
+            <input type="text" id="earthquake_risk" name="earthquake_risk" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="disasterForm"
-                for="fire"
-                >Fire
+            <label class="disasterForm" for="fire">Fire
             </label>
             <select name="fire_level" id="fire" class="attribs">
                 <option value="" disabled selected hidden></option>
@@ -373,19 +166,11 @@
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
             </select>
-            <input
-                type="text"
-                id="fire_risk"
-                name="fire_risk"
-                class="attribs"
-            />
+            <input type="text" id="fire_risk" name="fire_risk" class="attribs" />
         </div>
-        <br>  
+        <br>
         <div class="inputContainer">
-            <label
-                class="disasterForm"
-                for="flood"
-                >Flood
+            <label class="disasterForm" for="flood">Flood
             </label>
             <select name="flood_level" id="flood" class="attribs">
                 <option value="" disabled selected hidden></option>
@@ -393,19 +178,11 @@
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
             </select>
-            <input
-                type="email"
-                id="flood_risk"
-                name="flood"
-                class="attribs"
-            />
+            <input type="email" id="flood_risk" name="flood" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="disasterForm"
-                for="landslide"
-                >Landslide
+            <label class="disasterForm" for="landslide">Landslide
             </label>
             <select name="landslide_level" id="landslide" class="attribs">
                 <option value="" disabled selected hidden></option>
@@ -413,18 +190,11 @@
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
             </select>
-            <input
-                type="email"
-                id="landslide_risk"
-                name="landslide"
-                class="attribs"
-            />
+            <input type="email" id="landslide_risk" name="landslide" class="attribs" />
         </div>
         <br>
         <div class="inputContainer">
-            <label
-                class="disasterForm"
-                for="storm">Storm
+            <label class="disasterForm" for="storm">Storm
             </label>
             <select name="storm_level" id="storm" class="attribs">
                 <option value="" disabled selected hidden></option>
@@ -432,30 +202,25 @@
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
             </select>
-            <input
-                type="email"
-                id="storm_risk"
-                name="storm_risk"
-                class="attribs"
-            />
+            <input type="email" id="storm_risk" name="storm_risk" class="attribs" />
         </div>
         <br>
         <br><br>
         <!-- Error Messages -->
-        <div id="error_messages"></div>   
+        <div id="error_messages"></div>
         <br><br>
         <!-- Buttons -->
         <div>
-            <!-- Submits contents of the form -->                                               
-            <button class="confirm form" type="submit" id="submit_form" name="submit_form">Save</button>   
+            <!-- Submits contents of the form -->
+            <button class="confirm form" type="submit" id="submit_form" name="submit_form">Save</button>
         </div>
         <br>
         <div>
             <!-- Clears all contents of the form -->
             <button class="clear form">Delete</button>
         </div>
-      </div>
-      <div class="formModalFooter"></div>
+    </div>
+    <div class="formModalFooter"></div>
 
     <script>
         function closeModal() {
@@ -478,13 +243,13 @@
         }
 
         document.getElementById('close-btn').addEventListener('click', function (event) {
-                event.preventDefault();
-                console.log(
-                    'The user has closed the Add Activity modal.'
-                );
-                closeModal();
-            });
+            event.preventDefault();
+            console.log(
+                'The user has closed the Add Activity modal.'
+            );
+            closeModal();
+        });
     </script>
-</body> 
+</body>
 
 </html>
