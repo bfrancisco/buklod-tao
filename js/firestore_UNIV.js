@@ -1,3 +1,4 @@
+// Import necessary Firestore modules and functions.
 import {
 	getDocs,
 	addDoc,
@@ -6,18 +7,19 @@ import {
 	query,
 	where,
 	getDoc,
-	GeoPoint,
+	GeoPoint, // Firestore GeoPoint class for location data.
 } from 'https://www.gstatic.com/firebasejs/9.18.0/firebase-firestore.js';
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase app initialization module.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.18.0/firebase-app.js';
 
+// Firestore database and collection modules.
 import {
 	getFirestore,
 	collection,
 } from 'https://www.gstatic.com/firebasejs/9.18.0/firebase-firestore.js';
 
+// Utility function to get URL parameters
 function getUrlParameter(name) {
 	name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
 	var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
@@ -27,65 +29,67 @@ function getUrlParameter(name) {
 		: decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
-// Get lat and lng from URL parameters
+// Get lat and lng from URL parameters 
 const lat = getUrlParameter('lat');
 const lng = getUrlParameter('lng');
 
-// Display the values on the page or use them as needed
+// Commented out: Example of displaying lat/lng on page load.
 // document.addEventListener('DOMContentLoaded', function () {
 // 	document.getElementById(
 // 		'location-info'
 // 	).innerText = `Latitude: ${lat}, Longitude: ${lng}`;
 // });
 
+// Commented out: Old getCoordinates function.
 // export function getCoordinates() {
 // 	var roundLat = parseFloat(lat.toFixed(5));
 // 	var roundLon = parseFloat(lon.toFixed(5));
-//     var PARTNER_COORDINATES = `(${roundLat}, ${roundLon})`;
-//     return PARTNER_COORDINATES;
+//  var PARTNER_COORDINATES = `(${roundLat}, ${roundLon})`;
+//  return PARTNER_COORDINATES;
 // }
 
-export function getCoordinates(coordinates) {
-	var arr = coordinates.split('+');
-	var lat = arr[0], lng = arr[1];
-	// Ensure lat and lng are numbers
+// Function to convert a string of coordinates (e.g., "lat+lng") into a Firestore GeoPoint object.
+export function getCoordinates(coordinates) { // Accepts a string argument 'coordinates'.
+	var arr = coordinates.split('+'); // Splits the string by the '+' delimiter.
+	var lat = arr[0], lng = arr[1]; // Assigns parts to lat and lng.
+	// Ensure lat and lng are numbers.
 	const latNum = parseFloat(lat);
 	const lngNum = parseFloat(lng);
 
-	// Round the numbers to 5 decimal places
+	// Round the numbers to 5 decimal places 
 	var roundLat = parseFloat(latNum.toFixed(5));
 	var roundLon = parseFloat(lngNum.toFixed(5));
 
-	const GEOPOINT = new GeoPoint(roundLat, roundLon);
+	const GEOPOINT = new GeoPoint(roundLat, roundLon); // Creates a new GeoPoint object.
 
-	// Create the coordinates string
-	var PARTNER_COORDINATES = GEOPOINT;
-
-	return PARTNER_COORDINATES;
+	var PARTNER_COORDINATES = GEOPOINT; // Assigns the GeoPoint.
+	return PARTNER_COORDINATES; // Returns the GeoPoint object.
 }
 
+// Load Firebase configuration from a local secrets.json file.
 const SECRETS_PATH = "/secrets.json";
 const SECRETS_REQ = new Request(SECRETS_PATH);
 const SECRETS_RES = await fetch(SECRETS_REQ);
 const SECRETS = await SECRETS_RES.json();
 
-export const firebaseConfig = SECRETS.firebaseConfig;
+export const firebaseConfig = SECRETS.firebaseConfig; // Firebase configuration object.
 
+// Initialize Firebase app with the loaded configuration.
 initializeApp(firebaseConfig);
-export const DB = getFirestore();
+export const DB = getFirestore(); // Get Firestore database instance.
 
-var collection_reference = null;
+var collection_reference = null; // Holds a reference to the current Firestore collection being used.
 
-//export let partnersArray = [];
+//export let partnersArray = []; // Used for holding fetched data, currently unused.
 
-// General format of the rule engine
+// Defines the structure (collection name, identifier field, list of fields) for different data collections.
+// This acts as a rule engine for data operations.
 export const DB_RULES_AND_DATA = [
-	// ["collection_name", "identifier",
-	//     ["field1", ... ,"fieldN"] ];
+	// ["collection_name", "identifier_field_name", ["field1", "field2", ..., "fieldN"]];
 	[
-		'buklod-official',
-		'household_name',
-		[
+		'buklod-official', // Production collection for Buklod Tao households.
+		'household_name',  // Identifier field for Buklod Tao households.
+		[ // List of fields for Buklod Tao households.	
 			'contact_number',
 			'earthquake_risk',
 			'fire_risk',
@@ -112,9 +116,9 @@ export const DB_RULES_AND_DATA = [
 		],
 	],
 	[
-		'buklod-official-TEST',
+		'buklod-official-TEST', // Test collection for Buklod Tao households.
 		'household_name',
-		[
+		[ // List of fields for Buklod Tao households.
 			'contact_number',
 			'earthquake_risk',
 			'fire_risk',
@@ -141,9 +145,9 @@ export const DB_RULES_AND_DATA = [
 		],
 	],
 	[
-		'sdece-official',
-		'partner_name',
-		[
+		'sdece-official', // Production collection for SDECE partners/activities.
+		'partner_name',   // Identifier field for SDECE.
+		[ // List of fields for SDECE partners/activities.
 			'activity_date',
 			'activity_name',
 			'activity_nature',
@@ -161,9 +165,9 @@ export const DB_RULES_AND_DATA = [
 		],
 	],
 	[
-		'sdece-official-TEST',
+		'sdece-official-TEST', // Test collection for SDECE.
 		'partner_name',
-		[
+		[ // List of fields for SDECE partners/activities.
 			'activity_date',
 			'activity_name',
 			'activity_nature',
@@ -182,10 +186,10 @@ export const DB_RULES_AND_DATA = [
 	],
 ];
 
-//validation here
+// Defines validation rules for data fields within specific collections.
 const VALIDATION_RULES = {
-	//Rules for Validating Data
-	'buklod-official-TEST': {
+	//Rules for Validating Data for 'buklod-official-TEST' collection.
+	'buklod-official-TEST': { // Collection name for testing.
 		contact_number: {
 			type: 'string',
 			required: true,
@@ -218,7 +222,7 @@ const VALIDATION_RULES = {
 			enum: ['HOA', 'N/A'],
 		},
 		landslide_risk: { type: 'string', required: true },
-		// location_coordinates: { type: 'string', required: true },
+		// location_coordinates: { type: 'string', required: true }, // Was string, GeoPoint handled differently.
 		location_link: { type: 'string', required: true },
 		nearest_evac: { type: 'string', required: true, maxLength: 255 },
 		number_minors: { type: 'number' },
@@ -230,11 +234,11 @@ const VALIDATION_RULES = {
 			type: 'string',
 			required: true,
 			enum: ['May-Ari', 'Umuupa'],
-		},
+		},		
 		status: { type: 'string' },
 		storm_risk: { type: 'string', required: true },
 	},
-	'buklod-official': {
+	'buklod-official': { // Production collection for Buklod Tao households.
 		contact_number: {
 			type: 'string',
 			required: true,
@@ -283,7 +287,7 @@ const VALIDATION_RULES = {
 		status: { type: 'string' },
 		storm_risk: { type: 'string', required: true },
 	},
-	'sdece-official-TEST': {
+	'sdece-official-TEST': { // Test collection for SDECE.
 		partner_name: { type: 'string', required: true, maxLength: 255 },
 		partner_address: { type: 'string', required: true, maxLength: 255 },
 		partner_coordinates: { required: true },
@@ -314,7 +318,7 @@ const VALIDATION_RULES = {
 			maxLength: 127,
 		},
 	},
-	'sdece-official': {
+	'sdece-official': { // Production collection for SDECE.
 		partner_name: { type: 'string', required: true, maxLength: 255 },
 		partner_address: { type: 'string', required: true, maxLength: 255 },
 		partner_coordinates: { required: true },
@@ -347,11 +351,13 @@ const VALIDATION_RULES = {
 	},
 };
 
+// Export specific rule sets for easier access.
 export const BUKLOD_RULES = DB_RULES_AND_DATA[0];
 export const BUKLOD_RULES_TEST = DB_RULES_AND_DATA[1];
 export const SDECE_RULES = DB_RULES_AND_DATA[2];
 export const SDECE_RULES_TEST = DB_RULES_AND_DATA[3];
 
+// Commented out: Old setCollection implementation.
 // export function setCollection(collection_name){
 //     for(let rule of DB_RULES_AND_DATA ){
 //         if (rule[0] === collection_name){
@@ -360,38 +366,43 @@ export const SDECE_RULES_TEST = DB_RULES_AND_DATA[3];
 //     }
 // }
 
+// Sets the global 'collection_reference' based on the provided collection name.
 export function setCollection(collection_name) {
 	for (let rule of DB_RULES_AND_DATA) {
-		if (rule[0] === collection_name) {
-			collection_reference = collection(DB, collection_name);
+		if (rule[0] === collection_name) { // Finds the matching rule.
+			collection_reference = collection(DB, collection_name); // Creates Firestore collection reference.
 		}
 	}
 }
 
+// Returns the currently set global collection reference.
 export function getCollection() {
 	return collection_reference;
 }
 
+// Retrieves the document ID for a given partner name (SDECE specific).
+// Assumes 'partner_name' is the identifier field as per DB_RULES_AND_DATA.
 export function getDocIdByPartnerName(partner_name) {
-	const endName = partner_name.replace(/\s/g, '\uf8ff');
+	const endName = partner_name.replace(/\s/g, '\uf8ff'); // For Firestore string range queries.
 
-	//rule loop
+	// Loop through rules to find the one matching the current collection_reference.
 	for (let rule of DB_RULES_AND_DATA) {
-		if (collection_reference.id === rule[0]) {
+		if (collection_reference.id === rule[0]) { // Checks if current collection matches rule.
+			// Queries Firestore for documents where the identifier field (rule[1]) matches partner_name.
 			return getDocs(
 				query(
 					collection_reference,
-					where(rule[1], '>=', partner_name), // let's wait for Luigi's standardization. IF_ELSE nalang muna
+					where(rule[1], '>=', partner_name), 
 					where(rule[1], '<=', partner_name + endName)
 				)
 			)
 				.then((querySnapshot) => {
 					if (!querySnapshot.empty) {
-						// Assuming there is only one document with the given partner name
+						// Assuming there is only one document with the given partner name.
 						const doc = querySnapshot.docs[0];
-						return doc.id;
+						return doc.id; // Returns the ID of the first matching document.
 					} else {
-						return null;
+						return null; // No matching document found.
 					}
 				})
 				.catch((error) => {
@@ -402,10 +413,9 @@ export function getDocIdByPartnerName(partner_name) {
 	}
 }
 
+// Retrieves all documents matching a partner name (SDECE specific).
 export function getDocsByPartnerName(partner_name) {
 	const endName = partner_name.replace(/\s/g, '\uf8ff');
-
-	//rule loop
 	for (let rule of DB_RULES_AND_DATA) {
 		if (collection_reference.id === rule[0]) {
 			return getDocs(
@@ -417,7 +427,7 @@ export function getDocsByPartnerName(partner_name) {
 			)
 				.then((querySnapshot) => {
 					if (!querySnapshot.empty) {
-						const docs = querySnapshot.docs;
+						const docs = querySnapshot.docs; // Returns an array of document snapshots.
 						return docs;
 					} else {
 						return null;
@@ -431,61 +441,70 @@ export function getDocsByPartnerName(partner_name) {
 	}
 }
 
-export function getDocByID(docId) {
+// Retrieves a specific document by its ID from the currently set collection.
+export function getDocByID(docId) { // `docId` is the ID of the document to fetch.
+	// Loop through rules to find the one matching the current collection_reference.
+	// This loop is somewhat redundant if setCollection() has already correctly set collection_reference.
 	for (let rule of DB_RULES_AND_DATA) {
-		if (collection_reference.id === rule[0]) {
-			const DOC_REFERENCE = doc(DB, rule[0], docId);
-			let docObj = {};
-			return getDoc(DOC_REFERENCE).then((doc) => {
-				docObj = doc;
-				return docObj;
+		if (collection_reference.id === rule[0]) { // Ensure operating on the correct collection.
+			const DOC_REFERENCE = doc(DB, rule[0], docId); // Creates a document reference.
+			let docObj = {}; // Placeholder, not strictly needed as getDoc returns snapshot.
+			return getDoc(DOC_REFERENCE).then((docSnapshot) => { // Asynchronously fetches the document.
+				docObj = docSnapshot; // Assigns the DocumentSnapshot.
+				return docSnapshot; // Returns the DocumentSnapshot.
 			});
 		}
 	}
 }
 
-export function addEntry(inp_obj) {
-
+// Adds a new entry (document) to the currently set collection.
+export function addEntry(inp_obj) { // `inp_obj` contains the data for the new document.
 	for (let rule of DB_RULES_AND_DATA) {
-		if (rule[0] === collection_reference.id) {
-			let input = {}; // contents depend on the rule engine
+		if (rule[0] === collection_reference.id) { // Match current collection with rule.
+			let input = {}; // Object to hold filtered data based on rules.
+			// Iterate over keys in inp_obj to ensure only defined fields are added.
+			// This assumes inp_obj keys directly match rule[2] field names and order.
+			// TODO: iterate rule[2] and get values from inp_obj.
 			for (let i = 0; i < Object.keys(inp_obj).length; i++) {
-				input[rule[2][i]] = inp_obj[rule[2][i]];
+				// This mapping might be fragile if inp_obj keys don't align perfectly with rule[2] order.
+				input[rule[2][i]] = inp_obj[rule[2][i]]; 
 			}
-			addDoc(collection_reference, input)
+			addDoc(collection_reference, input) // Adds the document to Firestore.
 				.then((docRef) => {
 					alert("You may now reload the page for your addition to reflect on this page");
-
 				})
 				.catch((error) => {
 					console.error('Error adding document: ', error);
 					alert("Error uploading new activity. Please try again");
 				});
-			break;
+			break; // Exit loop once the matching rule is processed.
 		}
 	}
 }
 
-export function editEntry(inp_obj, docId) {
+// Updates an existing entry (document) in the currently set collection.
+export function editEntry(inp_obj, docId) { // `inp_obj` has updated data, `docId` is the ID of document to update.
 	for (let rule of DB_RULES_AND_DATA) {
-		if (rule[0] === collection_reference.id) {
-			const DOC_REFERENCE = doc(DB, rule[0], docId);
-			updateDoc(DOC_REFERENCE, inp_obj)
+		if (rule[0] === collection_reference.id) { // Match current collection with rule.
+			const DOC_REFERENCE = doc(DB, rule[0], docId); // Get reference to the specific document.
+			updateDoc(DOC_REFERENCE, inp_obj) // Updates the document with data from inp_obj.
 				.then(() => {
 					alert("You may now reload the page for your edit to reflect on this page");
 				})
 				.catch((error) => {
-					console.error('Error adding document: ', error);
+					console.error('Error updating document: ', error); 
 					alert("Error uploading the edited activity. Please try again");
 				});
-			break;
+			break; // Exit loop.
 		}
 	}
 }
 
+// Validates data object against rules defined for a specific collection.
 export function validateData(collectionName, data) {
-	const rules = VALIDATION_RULES[collectionName];
-	var errors = [];
+	const rules = VALIDATION_RULES[collectionName]; // Get validation rules for the collection.
+	var errors = []; // Array to store validation error messages.
+	// Predefined labels for fields to make error messages more user-friendly.
 	const fieldLabels = {
 		'activity_name': 'Activity Name',
 		'activity_nature': 'Nature of Activity',
@@ -503,103 +522,76 @@ export function validateData(collectionName, data) {
 		'ADMU_email': 'Email of Ateneo Contact Person'
 	};
 
+
+	// Iterate over each field defined in the validation rules for the collection.
 	for (const field in rules) {
-		const rule = rules[field];
-		const value = data[field];
-		const fieldLabel = fieldLabels[field] || field;
+		const rule = rules[field]; // Current field's validation rule.
+		const value = data[field]; // Value of the field from the input data.
+		const fieldLabel = fieldLabels[field] || field; // User-friendly label for the field.
 
-		// Check for required field
-		if (
-			rule.required &&
-			(value == undefined || value == null || value == '')
-		) {
+		// Check for required field: if rule says required and value is missing/empty.
+		if ( rule.required && (value == undefined || value == null || value == '') ) {
 			errors.push(`${fieldLabel} is required.`);
-			continue;
-		}
-
+			continue; // Skip further checks for this field.
+		} 
+		
+		// Commented out: Debugging for valid fields.
 		// else {
 		// 	errors.push("Field is valid!");
 		// }
 
-		// Skip type validation if not required
-		if (
-			!rule.required &&
-			(value == undefined || value == null || value == '')
-		) {
+		// Skip type validation if field is not required and is empty/missing.
+		if ( !rule.required && (value == undefined || value == null || value == '') ) {
 			continue;
 		}
 
+		// Check field type if specified in rules.
 		if (rule.type) {
-			if (rule.type === 'date') {
-				const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+			if (rule.type === 'date') { // Specific validation for date type.
+				const dateRegex = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD format.
 				if (!dateRegex.test(value)) {
-					errors.push(
-						`${fieldLabel} must be a valid date in YYYY-MM-DD format.`
-					);
+					errors.push( `${fieldLabel} must be a valid date in YYYY-MM-DD format.`);
 					continue;
 				}
-
 				const date = new Date(value);
-				if (isNaN(date.getTime())) {
+				if (isNaN(date.getTime())) { // Check if date is valid.
 					errors.push(`${fieldLabel} must be a valid date.`);
 					continue;
 				}
-			} else if (typeof value != rule.type) {
-				errors.push(
-					`${fieldLabel} must be of type ${rule.type}.`
-				);
+			} else if (typeof value != rule.type) { // General type check.
+				errors.push( `${fieldLabel} must be of type ${rule.type}.`);
 				continue;
 			}
 		}
 
-		// Check for minimum length
-		if (
-			rule.minLength &&
-			typeof value == 'string' &&
-			value.length < rule.minLength
-		) {
-			if (field === 'partner_contact_number') {
-				errors.push(
-					`${fieldLabel} must be at least ${rule.minLength} characters long and in the form 09XX XXX XXXX.`
-				);
-
+		// Check for minimum length for string types.
+		if ( rule.minLength && typeof value == 'string' && value.length < rule.minLength ) {
+			if (field === 'partner_contact_number') { // Custom message for contact number.
+				errors.push( `${fieldLabel} must be at least ${rule.minLength} characters long and in the form 09XX XXX XXXX.`);
 			} else {
-				errors.push(
-					`${fieldLabel} must be at least ${rule.minLength} characters long.`
-				);
+				errors.push( `${fieldLabel} must be at least ${rule.minLength} characters long.`);
 			}
-
 			continue;
 		}
 
-		// Check for maximum length
-		if (
-			rule.maxLength &&
-			typeof value == 'string' &&
-			value.length > rule.maxLength
-		) {
-			errors.push(
-				`${fieldLabel} cannot exceed ${rule.maxLength} characters.`
-			);
+		// Check for maximum length for string types.
+		if ( rule.maxLength && typeof value == 'string' && value.length > rule.maxLength ) {
+			errors.push( `${fieldLabel} cannot exceed ${rule.maxLength} characters.`);
 			continue;
 		}
 
-		// Check for regular expression pattern
+		// Check against regular expression pattern if defined.
 		if (rule.regex && !rule.regex.test(value)) {
 			errors.push(`${fieldLabel} is invalid.`);
 			continue;
 		}
 
-		// Check for enumerated values
+		// Check if value is one of the enumerated values if defined.
 		if (rule.enum && !rule.enum.includes(value)) {
-			errors.push(
-				`${fieldLabel}' must be one of ${rule.enum.join(',')}.`
-			);
+			errors.push( `${fieldLabel}' must be one of ${rule.enum.join(',')}.`);
 			continue;
 		}
-
 		//no validation for geolocation, url yet
 	}
-
-	return errors;
+	return errors; // Returns array of error messages, empty if no errors.
 }

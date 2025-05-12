@@ -1,45 +1,57 @@
-import {populateEditForm, getPartnersArray } from './firestore.js';
+// Import function to populate the edit form and to get initial partner/household data.
+// `populateEditForm` is called when an edit action is triggered.
+import {populateEditForm, getPartnersArray } from './firestore.js'; 
+// Import core Firestore utility functions.
 import {
-  getDocIdByPartnerName,
-  getDocByID,
-  setCollection,
-  getCollection,
-  DB,
-  addEntry,
-  BUKLOD_RULES_TEST,
+  getDocIdByPartnerName, // Used to get a document ID by a 'partner_name', likely for SDECE.
+  getDocByID,           // Used to fetch a specific document by its ID.
+  setCollection,        // Sets the current Firestore collection to work with.
+  getCollection,        // Gets a reference to the currently set collection.
+  DB,                   // Firestore database instance.
+  addEntry,             // Function to add a new document to Firestore.
+  BUKLOD_RULES_TEST,    // Rules/schema for the Buklod Tao test collection.
 } from './firestore_UNIV.js';
+// Import universal map-related functions and the map instance.
 import { addListeners, map } from './index_UNIV.js';
+// Import Firebase SDK modules for Firestore.
 import {
   getFirestore,
   collection,
   getDocs,
 } from 'https://www.gstatic.com/firebasejs/9.18.0/firebase-firestore.js';
+// Import static data for evacuation centers.
 import evacCenters from '/hardcode/evac-centers.json' with {type: 'json'};
 
+// Get a reference to the current Firestore collection (set by index_UNIV.js or elsewhere).
 var colRef = getCollection();
 
+// Pan the map to a default location on load.
 map.panTo(new L.LatLng(14.673, 121.11215));
 
-
+// Add OpenStreetMap tile layer to the map.
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:
-    '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors',
+    '© <a href="https://osm.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
 
+// Add Esri geocoding search control to the map.
 var searchControl = L.esri.Geocoding.geosearch().addTo(map);
 
+// Layer group to hold search results or dynamic markers.
 var results = L.layerGroup().addTo(map);
+// Global popup instance for map clicks.
 var popup = L.popup();
 
+// Array to hold partner/household data, likely populated by getPartnersArray().
 var partnersArray = getPartnersArray();
 
-// function to store the html for info display on pin click
+// Function to generate HTML content for a household marker's popup.
 function onPinClick(doc) {
-  // Variables for risk levels
+  // Variables for risk levels, extracted and split from combined string.
   var earthquake = doc.earthquake_risk;
   var earthquake_split = earthquake.split(' RISK: ');
-  var earthquake1 = earthquake_split[0];
-  var earthquake2 = earthquake_split[1];
+  var earthquake1 = earthquake_split[0]; // Risk level (e.g., HIGH)
+  var earthquake2 = earthquake_split[1]; // Risk description
   var fire = doc.fire_risk;
   var fire_split = fire.split(' RISK: ');
   var fire1 = fire_split[0];
@@ -57,6 +69,7 @@ function onPinClick(doc) {
   var storm1 = storm_split[0];
   var storm2 = storm_split[1];
 
+  // HTML structure for the popup.
   let leaflet_html = `
   <div class="leafletPopupContainer" id="leafletModal">
     <div class="leafletHeader">
@@ -154,57 +167,66 @@ function onPinClick(doc) {
         <label class="leafletLabel">Pregnant</label>
         <label class="leafletLabel">${doc.number_pregnant}</label>
       </div>
-      <button class="modalButton" id="editHouseholdPopup" name="submit_form" style="color:#3D97AF">Edit   &nbsp;&nbsp;<img src="./img/edit.png" alt="edit" style="height: 20px; width: 20px;"></button>
+      <!-- Edit button within the popup -->
+      <button class="modalButton" id="editHouseholdPopup" name="submit_form" style="color:#3D97AF">Edit     <img src="./img/edit.png" alt="edit" style="height: 20px; width: 20px;"></button>
       </div>
     </div>
   </div>
   `;
   return leaflet_html;
 }
-// Loads art the start
+// Initial loading of household data from Firestore.
 getDocs(colRef)
   .then((querySnapshot) => {
-    querySnapshot.forEach((entry) => {
-      var doc = entry.data();
-      var marker = L.marker([0, 0]);
+    querySnapshot.forEach((entry) => { // For each document snapshot in the query result.
+      var doc = entry.data(); // Get the data object from the document.
+      var marker = L.marker([0, 0]); // Initialize marker at a default location.
 
+      // If location coordinates exist, create the marker at the specified latitude and longitude.
       if (doc.location_coordinates != null) {
         marker = L.marker([
           parseFloat(doc.location_coordinates._lat),
           parseFloat(doc.location_coordinates._long),
         ]);
       }
-      // shows partner info on pin click
+      // Generate popup content for the marker.
       var popupContent = onPinClick(doc);
-      marker.bindPopup(popupContent);
+      marker.bindPopup(popupContent); // Bind the generated HTML content to the marker's popup.
+      // Event listener for when the popup is opened.
       marker.on('popupopen', function(e) {
-        var editBtn = document.getElementById('editHouseholdPopup')
+        var editBtn = document.getElementById('editHouseholdPopup'); // Get the edit button from the popup.
         if (editBtn) {
+          // Add click listener to the edit button.
           editBtn.addEventListener('click', function() {
-            const modal = document.getElementById('partnerModal');
-            var editFormModal = document.getElementById('editModal');
-            editFormModal.style.display = 'block';
-            modal.style.display = 'none';
-            populateEditForm(doc, editFormModal)
+            const modal = document.getElementById('partnerModal'); // Reference to an SDECE-specific partner modal, might not be relevant here.
+            var editFormModal = document.getElementById('editModal'); // Get the modal for editing.
+            editFormModal.style.display = 'block'; // Display the edit modal.
+            if (modal) modal.style.display = 'none'; // Hide the SDECE partner modal if it was open.
+            // Call function to populate the edit form with the current household's data.
+            // `doc` is the data object of the household associated with this marker.
+            // `entry.id` would be the document ID.
+            populateEditForm(doc, editFormModal); 
           })
         }
       })
-      results.addLayer(marker);
+      results.addLayer(marker); // Add the marker to the 'results' layer group.
     });
   }).catch((error) => {
     console.error('Error getting documents: ', error);
   });
 
+// Add markers for evacuation centers from the imported JSON data.
 evacCenters.forEach(center => {
   const marker = L.marker(
     [center.latitude, center.longitude],
-    {icon: L.icon({
+    {icon: L.icon({ // Custom icon for evacuation centers.
       iconUrl: "/hardcode/evac.svg",
       iconSize: [39,39],
-      popupAnchor: [0.5, -15]
+      popupAnchor: [0.5, -15] // Adjust popup anchor relative to the icon.
     })}
-  ).addTo(map);
+  ).addTo(map); // Add marker directly to the map.
 
+  // Bind popup to the evacuation center marker.
   marker.bindPopup(`
     <div class = "evac-marker-header">${center.type}</div>
     <div style = "text-align:center;">
@@ -212,30 +234,36 @@ evacCenters.forEach(center => {
       <br>Location: ${center.latitude}, ${center.longitude}
     </div>`);
 });
+
+// Iterate over an array of partners/households (partnersArray) to add their markers.
+// This seems to be an alternative way of adding markers if data is pre-fetched into partnersArray.
 partnersArray.forEach((partner) => {
-    var doc = partner;
-    var this_marker = partner.marker;
+    var doc = partner; // The household/partner data object.
+    var this_marker = partner.marker; // Assumes marker instance might already exist on the object.
     //console.log(doc);
     if (doc.location_coordinates != null) {
-      this_marker = L.marker([
+      this_marker = L.marker([ // Create marker if coordinates exist.
         parseFloat(doc.location_coordinates._lat),
         parseFloat(doc.location_coordinates._long),
       ]);
     }
-    // shows partner info on pin click
+    // Generate and bind popup content.
     var popupContent = onPinClick(doc);
     this_marker.bindPopup(popupContent);
-    results.addLayer(this_marker);
+    results.addLayer(this_marker); // Add to the results layer group.
+    // Update the marker property on the partner object.
     Object.defineProperty(partner, "marker", {value:this_marker, configurable: true});
   });
 
+// Add universal event listeners (e.g., for sidebar items).
 addListeners();
 
+// Function to handle map click events.
 function onMapClick(e) {
-  const lat = e.latlng.lat;
-  const lng = e.latlng.lng;
+  const lat = e.latlng.lat; // Latitude of the clicked point.
+  const lng = e.latlng.lng; // Longitude of the clicked point.
 
-  // This is the popup for when the user clicks on a spot on the map
+  // HTML content for the popup displayed on map click.
   var popupContent = `
     <div class="partner-geolocation">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -246,16 +274,18 @@ function onMapClick(e) {
     </div>
     <button id="mainButton" class="addButton p-5" data-lat="${lat}" data-lng="${lng}">Add Household</button>`;
 
+  // Set popup content and open it at the clicked location.
   popup.setLatLng(e.latlng).setContent(popupContent).openOn(map);
 
+  // Add event listener to the "Add Household" button within the popup.
   var addButton = document.querySelector('.addButton');
   addButton.addEventListener('click', function () {
-    const lat = this.getAttribute('data-lat');
-    const lng = this.getAttribute('data-lng');
+    const lat = this.getAttribute('data-lat'); // Get lat from button's data attribute.
+    const lng = this.getAttribute('data-lng'); // Get lng from button's data attribute.
 
-    var modal = document.getElementById('addModal');
+    var modal = document.getElementById('addModal'); // Get the "Add Household" modal.
 
-    // TODO: Integrate this functionality into the modal instead
+    // TODO: Integrate this functionality into the modal instead of opening a new window.
     // var partnerName = this.getAttribute("data-loc");
     // window.open(
     //   `addloc.html?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(
@@ -264,19 +294,23 @@ function onMapClick(e) {
     //   "_blank"
     // );
 
-    // Display the modal
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    // Display the "Add Household" modal.
+    modal.classList.remove('hidden'); // Assumes 'hidden' class controls visibility.
+    modal.classList.add('flex');      // Assumes 'flex' class for display styling.
 
-    // Set the coordinates based on the pin drop
+    // Pre-fill the location_coordinates field in the iframe of the addModal.
     modal.getElementsByTagName('iframe')[0].contentWindow.document.getElementById('location_coordinates').value = lat + '+' + lng;
 
- // Handle form submission
-  var addHouseholdFrom = document.getElementById('addHouseholdForm')
-  if (addHouseholdFrom) {
+ // Handle form submission for the "Add Household" modal.
+  var addHouseholdFrom = document.getElementById('addHouseholdForm'); // This ID is inside the iframe.
+  // The event listener for addHouseholdForm should be within addloc.html itself.
+  // This current event listener setup here might lead to issues or multiple listeners.
+  if (addHouseholdFrom) { // This check will likely fail as addHouseholdForm is in the iframe.
     addHouseholdFrom.addEventListener('submit', function (event) {
       event.preventDefault();
 
+      // Data gathering and submission logic for adding a new household.
+      // This is largely duplicated from what should be in addloc.html.
       const householdData = {
         household_name: document.getElementById('household_name').value,
         contact_number: document.getElementById('contact_number').value,
@@ -303,7 +337,7 @@ function onMapClick(e) {
           alert('Household added successfully!');
           modal.classList.add('hidden');
           modal.classList.remove('flex');
-          location.reload(); // Reload the map to show the new marker
+          location.reload(); // Reload the map to show the new marker.
         })
         .catch((error) => {
           console.error('Error adding document: ', error);
@@ -312,7 +346,7 @@ function onMapClick(e) {
   }
 
 
-    // Close the modal when the user clicks anywhere outside of it
+    // Close the modal when the user clicks anywhere outside of it.
     window.onclick = function (event) {
       if (event.target == modal) {
         modal.classList.add('hidden');
@@ -322,12 +356,14 @@ function onMapClick(e) {
   });
 }
 
+// Attach the onMapClick listener to the map.
 map.on('click', onMapClick);
 
-//// Event Listeners
+//// Event Listeners for search control.
 searchControl.on('results', function (data) {
-  console.log(data);
-  results.clearLayers();
+  console.log(data); // Log search results.
+  results.clearLayers(); // Clear previous search result markers.
+  // Add new markers for current search results.
   for (var i = data.results.length - 1; i >= 0; i--) {
     var marker = L.marker(data.results[i].latlng);
     //console.log(marker);
@@ -335,19 +371,19 @@ searchControl.on('results', function (data) {
   }
 });
 
-//script for add household modal
+//script for add household modal (general modal handling, somewhat redundant with onMapClick's modal logic).
 
-// modal
+// modal instance for adding.
 var formModal = document.getElementById('addModal');
 
-// open modal
-var openForm = document.getElementById('mainButton');
+// open modal button
+var openForm = document.getElementById('mainButton'); // 'mainButton' ID is used in map popup too.
 
-// Get the <span> element that closes the modal
-var closeForm = document.getElementsByClassName('closeForm')[0];
+// Get the <span> element that closes the modal (assumes a specific structure).
+var closeForm = document.getElementsByClassName('closeForm')[0]; // Prone to issues if multiple elements.
 
-// When the user clicks the button, open the modal
-if(openForm) {
+// When the user clicks the button, open the modal.
+if(openForm) { // Check if openForm element exists.
   openForm.onclick = function() {
     formModal.style.display = "block";
   }
@@ -357,22 +393,25 @@ if(openForm) {
   });
 }
 
-if(closeForm) {
+if(closeForm) { // Check if closeForm element exists.
   closeForm.addEventListener('click', function () {
     formModal.style.display = 'none';
   });
 }
 
-// Closing the modal if the user clicks outside of it
+// Closing the modal if the user clicks outside of it.
+// This handles both addModal (formModal) and an SDECE partnerModal.
 window.onclick = function (event) {
-  if (event.target == formModal) {
+  if (event.target == formModal) { // If click is outside addModal.
     formModal.style.display = 'none';
   }
-  if (event.target == partnerModal) {
+  const partnerModal = document.getElementById('partnerModal'); // Get partnerModal.
+  if (partnerModal && event.target == partnerModal) { // If click is outside partnerModal.
     partnerModal.style.display = 'none';
   }
 };
 
+// Function to set text for a main button (if it exists).
 function addMainButtonText() {
   var mainButtonText = document.getElementById('mainButtonText');
   if(mainButtonText) {

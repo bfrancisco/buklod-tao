@@ -8,7 +8,12 @@
     <link href='https://fonts.googleapis.com/css?family=Hind' rel='stylesheet'>
 
     <script type="module">
+        // Import necessary functions from firestore_UNIV.js
         import { editEntry, BUKLOD_RULES_TEST, getDocIdByPartnerName, getDocByID } from "./js/firestore_UNIV.js";
+        
+        // Function to populate form fields with existing partner data
+        // This function is specific to an SDECE/partner data structure, not Buklod Tao households.
+        // It might need to be adapted or replaced for Buklod Tao household editing.
         function populateFormFields(partnerData) {
             document.getElementById("partner").value = partnerData.name;
             document.getElementById("partner_contact-person").value = partnerData["`partner-contact`"];
@@ -19,15 +24,19 @@
             document.getElementById("ateneo_contact-person").value = partnerData["`admu-contact`"];
             document.getElementById("ateneo_contact-email").value = partnerData["`admu-email`"];
         }
+
+        // Function to fetch partner data based on a URL parameter
+        // This is for an SDECE/partner workflow.
+        // For Buklod Tao households, the docId would be passed differently (e.g., from index.js).
         function fetchPartnerData() {
             const params = new URLSearchParams(window.location.search);
-            const partnerName = params.get("partnerName");
+            const partnerName = params.get("partnerName"); // Expects 'partnerName' in URL
             if (partnerName) {
-                getDocIdByPartnerName(partnerName)
+                getDocIdByPartnerName(partnerName) // Assumes partner_name is the identifier
                     .then((docId) => {
                         if (docId) {
-                            getDocByID(docId).then((doc) => {
-                                populateFormFields(doc);
+                            getDocByID(docId).then((doc) => { // Fetches document by ID
+                                populateFormFields(doc); // Populates form with fetched data
                             });
                         }
                         else {
@@ -39,35 +48,42 @@
                 alert("No partnerName parameter found in the URL.");
             }
         }
-        //fetchPartnerData();
+        //fetchPartnerData(); // This is commented out, so data fetching might be handled differently or is pending.
 
+        // Attaches an event listener to the submit button for form submission.
         document.getElementById("submit_form").addEventListener("click", handleFormSubmit);
 
+        // Function to handle the form submission process.
         function handleFormSubmit() {
-            var collatedInput = {}; 
+            var collatedInput = {}; // Object to store all form input values.
+            // Loop through the fields defined in BUKLOD_RULES_TEST to gather data.
+            // BUKLOD_RULES_TEST[2] contains the array of field names for the Buklod Tao test collection.
             for(let i = 0; i < BUKLOD_RULES_TEST[2].length; i++){
                 //BUKLOD_RULES_TEST[2] are just the field names of each document
-                // console.log(BUKLOD_RULES_TEST[2][i]);
-                // let q = document.getElementById(BUKLOD_RULES_TEST[2][i]).value;
-                // collatedInput[BUKLOD_RULES_TEST[2][i]] = q;
+                // console.log(BUKLOD_RULES_TEST[2][i]); // Debugging: log current field name
+                // let q = document.getElementById(BUKLOD_RULES_TEST[2][i]).value; // Old way of getting value
+                // collatedInput[BUKLOD_RULES_TEST[2][i]] = q; // Old way of setting value
 
-                let fieldName = BUKLOD_RULES_TEST[2][i];
-                let inputValue = document.getElementById(fieldName).value;
+                let fieldName = BUKLOD_RULES_TEST[2][i]; // Current field name from the rules.
+                let inputValue = document.getElementById(fieldName).value; // Get value from the form element with corresponding ID.
 
+                // Convert specific fields to Number type or handle special cases.
                 if (fieldName == 'number_residents' || fieldName == 'location_coordinates' || fieldName == 'number_minors' || fieldName == 'number_pregnant' || fieldName == 'number_pwd' || fieldName == 'number_sick') {
                     if (fieldName == 'location_coordinates') {
-                        //collatedInput[fieldName] = getCoordinates();
-                        collatedInput[fieldName] = inputValue;
+                        //collatedInput[fieldName] = getCoordinates(); //  Used to convert to GeoPoint, currently uses raw input.
+                        collatedInput[fieldName] = inputValue; // Stores location_coordinates as a string.
                     } else {
-                        collatedInput[fieldName] = Number(inputValue);
+                        collatedInput[fieldName] = Number(inputValue); // Converts numeric fields to numbers.
                     }
                 } 
-                if(fieldName.includes('risk')){
-                    let riskType = fieldName.split('_')
+                // For risk fields, combines the selected risk level (e.g., HIGH) with its description.
+                if(fieldName.includes('risk')){ // Checks if the field name contains 'risk'.
+                    let riskType = fieldName.split('_') // Splits 'earthquake_risk' into ['earthquake', 'risk'].
+                    // Assumes a select element with ID like 'earthquake' for the level (HIGH, MEDIUM, LOW).
                     collatedInput[fieldName] = `${document.getElementById(riskType[0]).value.toUpperCase()} RISK: ${document.getElementById(fieldName).value}`;
                 }
                 else {
-                    collatedInput[fieldName] = inputValue;
+                    collatedInput[fieldName] = inputValue; // Assigns the input value for other fields.
                 }
 
                 // this is where data validation will happen
@@ -78,14 +94,18 @@
             // get docID via  getDocIdByPartnerName/getDocByID
             // then call editEntry(inp_obj, docId), inp_obj is collatedInput, docID is gotten from getDocIdByPartnerName/getDocByID
             // so basically editEntry(collatedInput, docID via  getDocIdByPartnerName/getDocByID)
+            // The logic below is for an SDECE/partner form, not Buklod Tao household form,
+            // as it uses field IDs like "partner", "nature_of_act", etc. which are not in the HTML above.
+            // This section needs to be updated to use the `currentDocId` (if passed) and `collatedInput`
+            // with the `editEntry` function for Buklod Tao households.
     
-
-
-            const partnerName = document.getElementById("partner").value;
-            getDocIdByPartnerName(partnerName)
+            // This section placeholder/old SDECE logic.
+            const partnerName = document.getElementById("partner").value; // "partner" ID is not in the HTML structure above.
+            getDocIdByPartnerName(partnerName) // This is SDECE specific. For households, docId should be passed.
                 .then((docId) => {
                     if (docId) {
-                        // If a matching docId is found, proceed with updating the document
+                        // If a matching docId is found, proceed with updating the document.
+                        // The fields below are also SDECE specific.
                         const name = partnerName;
                         const activity = document.getElementById("nature_of_act").value;
                         const admuContact = document.getElementById("ateneo_contact-person").value;
@@ -95,6 +115,8 @@
                         const partnerContact = document.getElementById("partner_contact-person").value;
                         const dates = document.getElementById("dates_of_partnership").value;
 
+                        // `editLocation` is not an imported function.
+                        // The parameters here are for SDECE, not Buklod Tao household data.
                         editLocation(docId, name, activity, admuContact, admuEmail, admuOffice, org, partnerContact, dates);
                     }
                     else {
@@ -112,6 +134,7 @@
 
     <!-- Modal Header: includes title and address -->
     <div class="formModalHeader">
+        <!-- Close button for the modal -->
         <button type="button" class="closeForm" id="close-btn">
             <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -121,10 +144,11 @@
         </button>
         <h1 class="formHeader">Edit Household</h1>
     </div>
+    <!-- Modal Content: contains the form fields -->
     <div class="formModalContent">
         <h2 class="subHeader">HOUSEHOLD INFORMATION</h2>
         <br>
-        <!-- Form -->
+        <!-- Form for editing household details -->
         <div class="inputContainer">
             <label class="form" for="household_name">Household Name
             </label>
@@ -156,7 +180,7 @@
         </div>
         <br>
         <div class="inputContainer">
-            <label class="form" for="HOA/NOA">Part of HOA/NOA
+            <label class="form" for="HOA/NOA">Part of HOA/NOA 
             </label>
             <input type="text" id="is_hoa_noa" name="HOA/NOA" class="attribs" value="HOA" />
         </div>
@@ -199,8 +223,9 @@
             <input type="number" id="number_residents" name="number_residents" class="attribs" />
         </div>
         <br>
+        <!-- "Number of Adults" field. Note: This field is not in BUKLOD_RULES_TEST. -->
         <div class="inputContainer">
-            <label class="form" for="number_adults">Number of Adults
+            <label class="form" for="number_adults">Number of Adults 
             </label>
             <input type="number" id="number_adults" name="number_adults" class="attribs" />
         </div>
@@ -243,18 +268,22 @@
         <br>
         <h2 class="subHeader">RISK LEVELS</h2>
         <br>
+        <!-- Earthquake Risk Level and Description -->
         <div class="inputContainer">
             <label class="disasterForm" for="earthquake">Earthquake
             </label>
+            <!-- Dropdown for selecting risk level -->
             <select name="earthquake_level" id="earthquake" class="attribs">
                 <option value="" disabled selected hidden></option>
                 <option value="high">HIGH</option>
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
             </select>
+            <!-- Text input for risk description -->
             <input type="text" id="earthquake_risk" name="earthquake_risk" class="attribs" />
         </div>
         <br>
+        <!-- Fire Risk Level and Description -->
         <div class="inputContainer">
             <label class="disasterForm" for="fire">Fire
             </label>
@@ -267,6 +296,7 @@
             <input type="text" id="fire_risk" name="fire_risk" class="attribs" />
         </div>
         <br>
+        <!-- Flood Risk Level and Description -->
         <div class="inputContainer">
             <label class="disasterForm" for="flood">Flood
             </label>
@@ -276,9 +306,11 @@
                 <option value="medium">MEDIUM</option>
                 <option value="low">LOW</option>
             </select>
+            <!-- Input type "email" was used for risk description and not "text". -->
             <input type="email" id="flood_risk" name="flood" class="attribs" />
         </div>
         <br>
+        <!-- Landslide Risk Level and Description -->
         <div class="inputContainer">
             <label class="disasterForm" for="landslide">Landslide
             </label>
@@ -291,6 +323,7 @@
             <input type="email" id="landslide_risk" name="landslide" class="attribs" />
         </div>
         <br>
+        <!-- Storm Risk Level and Description -->
         <div class="inputContainer">
             <label class="disasterForm" for="storm">Storm
             </label>
@@ -304,46 +337,53 @@
         </div>
         <br>
         <br><br>
-        <!-- Error Messages -->
+        <!-- Container for displaying error messages from validation -->
         <div id="error_messages"></div>
         <br><br>
-        <!-- Buttons -->
+        <!-- Buttons for form actions -->
         <div>
-            <!-- Submits contents of the form -->
+            <!-- Submits contents of the form to save changes -->
             <button class="confirm form" type="submit" id="submit_form" name="submit_form">Save</button>
         </div>
         <br>
         <div>
-            <!-- Clears all contents of the form -->
+            <!-- Placeholder for a delete button. Functionality for delete is not fully implemented in the script. -->
             <button class="clear form">Delete</button>
         </div>
     </div>
+    <!-- Modal Footer (currently empty) -->
     <div class="formModalFooter"></div>
 
     <script>
+        // Function to send a message to the parent window to close this edit modal.
         function closeModal() {
-            window.parent.postMessage('closeEditModal', '*');
+            window.parent.postMessage('closeEditModal', '*'); // '*' allows any origin, we can consider restricting for security for future iterations.
         }
 
+        // Event listener for the main close button (top right of the modal).
         document
-            .getElementsByClassName('closeForm')[0]
+            .getElementsByClassName('closeForm')[0] // Assumes only one element with class 'closeForm'.
             .addEventListener('click', function (event) {
-                event.preventDefault();
+                event.preventDefault(); // Prevent any default button action.
                 console.log(
-                    'The user has closed the Add Activity modal.'
+                    'The user has closed the Add Activity modal.' // Log message is from addloc.html, should be "Edit Household modal".
                 );
-                closeModal();
+                closeModal(); // Calls the function to close the modal.
             });
 
-
+        // Redundant closeModal function definition. The one above is sufficient.
+        /*
         function closeModal() {
             window.parent.postMessage('closeEditModal', '*');
         }
+        */
 
+        // Event listener for the close button identified by ID 'close-btn'.
+        // This is the same button as `getElementsByClassName('closeForm')[0]`.
         document.getElementById('close-btn').addEventListener('click', function (event) {
             event.preventDefault();
             console.log(
-                'The user has closed the Add Activity modal.'
+                'The user has closed the Add Activity modal.' // Log message is also from addloc.html.
             );
             closeModal();
         });
